@@ -22,6 +22,19 @@ export interface VictimLocationData {
 }
 
 /**
+ * Rescuer location data to send to server
+ */
+export interface RescuerLocationMessage {
+  type: 'rescuer_location';
+  rescuer_id?: string;
+  latitude: number;
+  longitude: number;
+  altitude: number | null;
+  accuracy: number;
+  timestamp: number;
+}
+
+/**
  * Callback function type for receiving location updates
  */
 type LocationUpdateCallback = (location: VictimLocationData) => void;
@@ -154,5 +167,49 @@ export class GalileoWebSocket {
    */
   isConnected(): boolean {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  /**
+   * Send rescuer's current location to the server
+   * 
+   * This is called automatically when receiving victim location updates
+   * to keep the server informed of the rescuer's position.
+   * 
+   * @param location - The rescuer's current GPS location
+   * @param rescuerId - Optional rescuer identifier
+   */
+  sendRescuerLocation(location: {
+    lat: number;
+    lon: number;
+    alt: number | null;
+    accuracy: number;
+    timestamp: number;
+  }, rescuerId?: string): void {
+    if (!this.isConnected()) {
+      if (__DEV__) {
+        console.warn('Cannot send rescuer location: WebSocket not connected');
+      }
+      return;
+    }
+
+    const message: RescuerLocationMessage = {
+      type: 'rescuer_location',
+      rescuer_id: rescuerId,
+      latitude: location.lat,
+      longitude: location.lon,
+      altitude: location.alt,
+      accuracy: location.accuracy,
+      timestamp: location.timestamp,
+    };
+
+    try {
+      this.ws?.send(JSON.stringify(message));
+      
+      if (__DEV__) {
+        console.log('Sent rescuer location to server:', message);
+      }
+    } catch (error) {
+      console.error('Failed to send rescuer location:', error);
+    }
   }
 }

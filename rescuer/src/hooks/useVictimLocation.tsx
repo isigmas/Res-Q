@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { GalileoWebSocket, VictimLocationData } from '../services/galileo';
+import { useRescuerLocation } from './useRescuerLocation';
 
 /**
  * Victim location data structure (ONLINE mode)
@@ -20,10 +21,15 @@ interface VictimLocation {
 /**
  * Custom hook to receive victim's location updates via WebSocket in ONLINE mode
  * 
- * USE CASE: Compass Navigation
+ * USE CASE: Compass Navigation with Bidirectional Location Exchange
  * This hook provides real-time TARGET (victim) location that the compass will point to.
+ * 
+ * BIDIRECTIONAL COMMUNICATION:
+ * - Server → Client: Receives victim's location updates in real-time
+ * - Client → Server: Automatically sends rescuer's location back when receiving updates
+ * 
  * The compass component should:
- * 1. Get rescuer's current location (from device GPS)
+ * 1. Get rescuer's current location (from device GPS via useRescuerLocation)
  * 2. Get victim's location (from this hook - updated in real-time via WebSocket)
  * 3. Calculate bearing angle from rescuer → victim
  * 4. Calculate distance from rescuer → victim
@@ -31,16 +37,18 @@ interface VictimLocation {
  * 
  * Features:
  * - Establishes WebSocket connection for real-time location updates
- * - Receives location updates instantly when victim's position changes (server-push)
+ * - Receives victim location updates instantly when position changes (server-push)
+ * - Automatically sends rescuer's GPS location back to server on each victim update
  * - Auto-reconnects on connection loss with exponential backoff
  * - Returns last known valid location on connection error (maintains continuity)
  * - Cleans up WebSocket connection on unmount (prevents memory leaks)
  * - Returns null if no location data has been received yet
  * 
  * BENEFITS over HTTP polling:
- * - Instant updates (no 5-second delay)
+ * - Instant updates (no delay)
  * - Lower battery usage (no repeated requests)
  * - Reduced server load (server pushes only when position changes)
+ * - Server knows rescuer's position for coordination/safety
  * 
  * @param victimId - The unique identifier for the victim to track
  * @returns VictimLocation object (target for compass) or null if no data available yet
@@ -48,10 +56,10 @@ interface VictimLocation {
  * @example
  * ```tsx
  * function CompassScreen({ victimId }: { victimId: string }) {
+ *   // This hook automatically handles bidirectional location exchange
  *   const victimLocation = useVictimLocation(victimId);
- *   const rescuerLocation = useRescuerLocation(); // Get from device GPS
  *   
- *   if (!victimLocation || !rescuerLocation) {
+ *   if (!victimLocation) {
  *     return <LoadingSpinner />;
  *   }
  *   
@@ -66,6 +74,9 @@ export function useVictimLocation(victimId: string): VictimLocation | null {
   const [location, setLocation] = useState<VictimLocation | null>(null);
   const wsRef = useRef<GalileoWebSocket | null>(null);
   const isMountedRef = useRef(true);
+  
+  // Get rescuer's current location to send back to server
+  const rescuerLocation = useRescuerLocation();
 
   useEffect(() => {
     // Mark component as mounted
@@ -89,6 +100,17 @@ export function useVictimLocation(victimId: string): VictimLocation | null {
         };
         
         setLocation(mappedLocation);
+
+        // Send rescuer's location back to server when we receive victim update
+        if (rescuerLocation && wsRef.current) {
+          wsRef.current.sendRescuerLocation({
+            lat: rescuerLocation.lat,
+            lon: rescuerLocation.lon,
+            alt: rescuerLocation.alt,
+            accuracy: rescuerLocation.accuracy,
+            timestamp: rescuerLocation.timestamp,
+          });
+        }
       }
     };
 
@@ -124,7 +146,8 @@ export function useVictimLocation(victimId: string): VictimLocation | null {
         wsRef.current = null;
       }
     };
-  }, [victimId]); // Re-run effect if victimId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [victimId]); // Only re-run if victimId changes (not rescuerLocation - we use latest via closure)
 
   return location;
 }
