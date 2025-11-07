@@ -5,7 +5,18 @@ import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+type CustomSymbolName =
+  | 'house.fill'
+  | 'paperplane.fill'
+  | 'chevron.left.forwardslash.chevron.right'
+  | 'chevron.right'
+  | 'location.fill'
+  | 'cloud.rain.fill'
+  | 'location.circle.fill'
+  | 'map.fill'
+  | 'exclamationmark.triangle.fill';
+
+type IconMapping = Record<CustomSymbolName, ComponentProps<typeof MaterialIcons>['name']>;
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
@@ -18,6 +29,11 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'location.fill': 'navigation',
+  'cloud.rain.fill': 'cloud',
+  'location.circle.fill': 'location-on',
+  'map.fill': 'map',
+  'exclamationmark.triangle.fill': 'warning',
 } as IconMapping;
 
 /**
