@@ -1,25 +1,16 @@
-import { StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { StyleSheet, View } from 'react-native';
+import MapView from '@/components/MapView';
 
 export default function HomeScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Res-Q</ThemedText>
-      <ThemedText style={styles.subtitle}>Mountain Rescue Navigation</ThemedText>
-    </ThemedView>
+    <View style={styles.container}>
+      <MapView />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    opacity: 0.7,
   },
 });
