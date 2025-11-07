@@ -83,6 +83,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="dummy"
+          options={{
+            title: 'Test',
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={24} name="chevron.left.forwardslash.chevron.right" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="explore"
           options={{
             href: null,
