@@ -12,6 +12,8 @@
  * - Auto-reconnects on connection loss
  */
 
+import { Platform } from 'react-native';
+
 export interface VictimLocationData {
   user_id: string;
   latitude: number;   // Victim's latitude (target position)
@@ -50,6 +52,7 @@ type ErrorCallback = (error: Event | Error) => void;
  * Manages a persistent WebSocket connection to receive real-time location updates.
  * Handles connection lifecycle, reconnection, and message parsing.
  */
+
 export class GalileoWebSocket {
   private ws: WebSocket | null = null;
   private victimId: string;
@@ -76,7 +79,21 @@ export class GalileoWebSocket {
   connect(): void {
     // TODO: Replace with actual WebSocket URL from environment config
     const WS_URL = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3000';
-    const wsEndpoint = `${WS_URL}/ws/victims/${this.victimId}/location`;
+
+    // On Android emulators 'localhost' refers to the emulator itself.
+    // Map 'localhost' to the host machine IP used by the Android emulator.
+    // - Android emulator (default) -> 10.0.2.2
+    // - If you're testing on a physical device, set EXPO_PUBLIC_WS_URL to your machine's LAN IP.
+    let wsHost = WS_URL;
+    try {
+      if (Platform.OS === 'android' && wsHost.includes('localhost')) {
+        wsHost = wsHost.replace('localhost', '10.0.2.2');
+      }
+    } catch {
+      // Platform might not be available in some test environments; ignore mapping if so.
+    }
+
+    const wsEndpoint = `${wsHost}/ws/victims/${this.victimId}/location`;
 
     try {
       this.ws = new WebSocket(wsEndpoint);
@@ -109,11 +126,15 @@ export class GalileoWebSocket {
         }
       };
 
-      this.ws.onerror = (error) => {
+      // WebSocket onerror receives an Event in React Native — it isn't always an Error instance.
+      // Log useful details and forward the raw event to the provided onError handler.
+      this.ws.onerror = (event: any) => {
         if (__DEV__) {
-          console.error('WebSocket error:', error);
+          // Try to extract a message when available, otherwise print the event object
+          const msg = event?.message || event?.reason || event;
+          console.error('WebSocket error (victim):', msg);
         }
-        this.onError(error);
+        this.onError(event);
       };
 
       this.ws.onclose = (event) => {

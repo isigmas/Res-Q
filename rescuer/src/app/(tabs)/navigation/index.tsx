@@ -1,12 +1,10 @@
 import React from "react";
-import { Text, View } from "react-native";
+import LocationTestScreen from "../../../components/LocationTestScreen";
 
-const Navigation = () => {
-  return (
-    <View>
-      <Text>Navigation</Text>
-    </View>
-  );
+const Compas = () => {
+  // TEMPORARY: Using test screen to verify WebSocket functionality
+  // Replace with actual compass component after testing
+  return <LocationTestScreen />;
 };
 
-export default Navigation;
+export default Compas;
