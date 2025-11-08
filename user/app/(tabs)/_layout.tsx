@@ -1,44 +1,55 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { View, StyleSheet, Pressable, Text } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useRouter } from "expo-router";
 import { RouteIcon } from "@/components/icons/RouteIcon";
 import { CloudBoltIcon } from "@/components/icons/CloudBoltIcon";
 import { ShareNodesIcon } from "@/components/icons/ShareNodesIcon";
 import { DownloadIcon } from "@/components/icons/DownloadIcon";
+import { HomeIcon } from "@/components/icons/HomeIcon";
 
 export default function TabLayout() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     return (
         <View style={styles.container}>
             <Tabs
                 screenOptions={{
-                    tabBarActiveTintColor: "#000",
-                    tabBarInactiveTintColor: "#abababff",
+                    tabBarActiveTintColor: "#172f44",
+                    tabBarInactiveTintColor: "#9ca3af",
                     headerShown: false,
                     tabBarButton: HapticTab,
                     tabBarStyle: {
-                        backgroundColor: "#fff",
-                        borderTopWidth: 1,
-                        borderTopColor: "#e0e0e0",
-                        height: 90,
-                        paddingBottom: 10,
-                        paddingLeft: 10,
-                        paddingRight: 10,
-                        paddingTop: 8,
+                        backgroundColor: "#ffffff",
+                        borderTopWidth: 0,
+                        height: Platform.OS === "ios" ? 55 + insets.bottom : 88,
+                        paddingBottom:
+                            Platform.OS === "ios" ? insets.bottom + 2 : 12,
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingTop: 10,
+                        elevation: 20,
+                        shadowColor: "#000",
+                        shadowOffset: {
+                            width: 0,
+                            height: -4,
+                        },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 12,
                     },
                     tabBarLabelStyle: {
                         fontSize: 11,
-                        fontWeight: "600",
-                        height: 32,
-                        lineHeight: 14,
+                        fontWeight: "700",
+                        letterSpacing: 0.2,
+                        marginTop: 4,
                     },
                     tabBarItemStyle: {
-                        paddingVertical: 2,
+                        paddingVertical: 4,
+                        borderRadius: 16,
                     },
                     tabBarAllowFontScaling: false,
                 }}
@@ -65,18 +76,14 @@ export default function TabLayout() {
                     name="index"
                     options={{
                         title: "",
-                        tabBarIcon: ({ color, focused }) => (
+                        tabBarIcon: ({ focused }) => (
                             <View
                                 style={[
                                     styles.homeIconContainer,
                                     focused && styles.homeIconFocused,
                                 ]}
                             >
-                                <IconSymbol
-                                    size={48}
-                                    name="house.fill"
-                                    color={focused ? "#fff" : color}
-                                />
+                                <HomeIcon size={32} color="#fff" />
                             </View>
                         ),
                     }}
@@ -115,17 +122,26 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     homeIconContainer: {
-        width: 66,
-        height: 66,
-        borderRadius: 38,
+        width: 68,
+        height: 68,
+        borderRadius: 34,
         backgroundColor: "#172f44",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: -15,
-        borderWidth: 3,
+        marginTop: -18,
+        borderWidth: 4,
         borderColor: "#fff",
+        shadowColor: "#172f44",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
     },
     homeIconFocused: {
-        backgroundColor: "#172f44",
+        backgroundColor: "#1a3a52",
+        transform: [{ scale: 1.05 }],
     },
 });

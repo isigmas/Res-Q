@@ -11,7 +11,7 @@ import { useEffect, useState, useRef } from "react";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { Stack } from "expo-router";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useUserSocket } from "@/contexts/WebSocketContext";
 
 interface Coordinates {
@@ -19,13 +19,103 @@ interface Coordinates {
     longitude: number;
 }
 
+// Jasny styl mapy
+const mapStyle = [
+    {
+        elementType: "geometry",
+        stylers: [{ color: "#f5f5f5" }],
+    },
+    {
+        elementType: "labels.icon",
+        stylers: [{ visibility: "off" }],
+    },
+    {
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#616161" }],
+    },
+    {
+        elementType: "labels.text.stroke",
+        stylers: [{ color: "#f5f5f5" }],
+    },
+    {
+        featureType: "administrative.land_parcel",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#bdbdbd" }],
+    },
+    {
+        featureType: "poi",
+        elementType: "geometry",
+        stylers: [{ color: "#eeeeee" }],
+    },
+    {
+        featureType: "poi",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#757575" }],
+    },
+    {
+        featureType: "poi.park",
+        elementType: "geometry",
+        stylers: [{ color: "#e5e5e5" }],
+    },
+    {
+        featureType: "poi.park",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9e9e9e" }],
+    },
+    {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#ffffff" }],
+    },
+    {
+        featureType: "road.arterial",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#757575" }],
+    },
+    {
+        featureType: "road.highway",
+        elementType: "geometry",
+        stylers: [{ color: "#dadada" }],
+    },
+    {
+        featureType: "road.highway",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#616161" }],
+    },
+    {
+        featureType: "road.local",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9e9e9e" }],
+    },
+    {
+        featureType: "transit.line",
+        elementType: "geometry",
+        stylers: [{ color: "#e5e5e5" }],
+    },
+    {
+        featureType: "transit.station",
+        elementType: "geometry",
+        stylers: [{ color: "#eeeeee" }],
+    },
+    {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#c9c9c9" }],
+    },
+    {
+        featureType: "water",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9e9e9e" }],
+    },
+];
+
 export default function RescueTrackingScreen() {
     const router = useRouter();
     const mapRef = useRef<MapView>(null);
     const { rescuerLocation: rescuerLocationFromWS } = useUserSocket();
 
     const [userLocation, setUserLocation] = useState<Coordinates>({
-        latitude: 50.0614,
+        latitude: 51.0614,
         longitude: 19.9366,
     });
     const [rescuerLocation, setRescuerLocation] = useState<Coordinates>({
@@ -39,10 +129,14 @@ export default function RescueTrackingScreen() {
     // Animacja pulsowania dla czerwonego cienia
     const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
+    // Animacje pulsowania dla markerów
+    const userMarkerPulse = useRef(new Animated.Value(1)).current;
+    const rescuerMarkerPulse = useRef(new Animated.Value(1)).current;
+
     useEffect(() => {
         getUserLocation();
 
-        // Uruchom animację pulsowania
+        // Uruchom animację pulsowania dla nagłówka
         Animated.loop(
             Animated.sequence([
                 Animated.timing(pulseAnim, {
@@ -54,6 +148,38 @@ export default function RescueTrackingScreen() {
                     toValue: 0.3,
                     duration: 1500,
                     useNativeDriver: false,
+                }),
+            ])
+        ).start();
+
+        // Animacja pulsowania dla markera użytkownika (czerwony)
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(userMarkerPulse, {
+                    toValue: 1.3,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(userMarkerPulse, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+
+        // Animacja pulsowania dla markera ratownika (zielony)
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(rescuerMarkerPulse, {
+                    toValue: 1.3,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(rescuerMarkerPulse, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
                 }),
             ])
         ).start();
@@ -118,7 +244,12 @@ export default function RescueTrackingScreen() {
                 mapRef.current.fitToCoordinates(
                     [userLocation, { latitude: lat, longitude: lng }],
                     {
-                        edgePadding: { top: 100, bottom: 350, left: 50, right: 50 },
+                        edgePadding: {
+                            top: 100,
+                            bottom: 350,
+                            left: 50,
+                            right: 50,
+                        },
                         animated: true,
                     }
                 );
@@ -208,7 +339,7 @@ export default function RescueTrackingScreen() {
                 <MapView
                     ref={mapRef}
                     style={styles.map}
-                    provider={PROVIDER_DEFAULT}
+                    provider={PROVIDER_GOOGLE}
                     initialRegion={{
                         latitude: userLocation.latitude,
                         longitude: userLocation.longitude,
@@ -224,11 +355,22 @@ export default function RescueTrackingScreen() {
                         title="Twoja lokalizacja"
                         pinColor="#ff7e7b"
                     >
-                        <View style={styles.markerContainer}>
-                            <Image
-                                source={require("@/assets/images/user-avatar.png")}
-                                style={styles.markerImage}
+                        <View style={styles.markerWrapper}>
+                            <Animated.View
+                                style={[
+                                    styles.markerPulse,
+                                    styles.userMarkerPulse,
+                                    {
+                                        transform: [{ scale: userMarkerPulse }],
+                                    },
+                                ]}
                             />
+                            <View style={styles.markerContainer}>
+                                <Image
+                                    source={require("@/assets/images/user-avatar.png")}
+                                    style={styles.markerImage}
+                                />
+                            </View>
                         </View>
                     </Marker>
 
@@ -239,11 +381,24 @@ export default function RescueTrackingScreen() {
                         description="W drodze do Ciebie"
                         pinColor="#4caf50"
                     >
-                        <View style={styles.markerContainer}>
-                            <Image
-                                source={require("@/assets/images/rescurer.png")}
-                                style={styles.markerImage}
+                        <View style={styles.markerWrapper}>
+                            <Animated.View
+                                style={[
+                                    styles.markerPulse,
+                                    styles.rescuerMarkerPulse,
+                                    {
+                                        transform: [
+                                            { scale: rescuerMarkerPulse },
+                                        ],
+                                    },
+                                ]}
                             />
+                            <View style={styles.markerContainer}>
+                                <Image
+                                    source={require("@/assets/images/rescurer.png")}
+                                    style={styles.markerImage}
+                                />
+                            </View>
                         </View>
                     </Marker>
                 </MapView>
@@ -269,7 +424,7 @@ export default function RescueTrackingScreen() {
 
                         <View style={styles.statBox}>
                             <Text style={styles.statValue}>
-                                {distance.toFixed(1)} km
+                                {distance.toFixed(3)} km
                             </Text>
                             <Text style={styles.statLabel}>Odległość</Text>
                         </View>
@@ -348,6 +503,25 @@ const styles = StyleSheet.create({
     map: {
         flex: 1,
     },
+    markerWrapper: {
+        width: 80,
+        height: 80,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    markerPulse: {
+        position: "absolute",
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        opacity: 0.3,
+    },
+    userMarkerPulse: {
+        backgroundColor: "#ff7e7b",
+    },
+    rescuerMarkerPulse: {
+        backgroundColor: "#4caf50",
+    },
     markerContainer: {
         width: 60,
         height: 60,
@@ -356,6 +530,7 @@ const styles = StyleSheet.create({
         borderColor: "#fff",
         overflow: "hidden",
         backgroundColor: "#fff",
+        zIndex: 1,
     },
     markerImage: {
         width: 60,
