@@ -2,6 +2,7 @@ from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect
 from .dto.message import Message
 from .dto.user import User
+import time
 
 router = APIRouter()
 
@@ -28,6 +29,10 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
     try:
         while True:
             data = await websocket.receive_json()
+
+            print("----- [NEW DATA] -----")
+            print(data)
+            print("----- [END DATA] -----")
 
             # ----- Forwarding location messages ----- #
 
@@ -74,3 +79,22 @@ async def send_to(receiver_type: User, msg: Message):
 
     for receiver in receiver_list:
         await receiver.send_json(msg.to_dict())
+
+
+@router.websocket("/test/{con_type}")
+async def websocket_test(websocket: WebSocket, con_type: str):
+    await websocket.accept()
+
+    try:
+        while True:
+            new_mes = Message(
+                type_msg="tourist_location",
+                latitude=51.108867564129866,
+                longitude=17.056756409952886,
+                altitude=122.6724967956543,
+                accuracy=35,
+                timestamp=int(time.time())
+            )
+            await websocket.send_json(new_mes.to_dict())
+    except WebSocketDisconnect:
+        pass
