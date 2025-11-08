@@ -15,8 +15,12 @@ import { useRescuerLocation } from '../hooks/useRescuerLocation';
  * Usage: Add this to your app temporarily for testing
  */
 export default function LocationTestScreen() {
-  const victimLocation = useVictimLocation('test-victim-123');
-  const rescuerLocation = useRescuerLocation();
+  // In the `user/` app the local device is the victim (sending location).
+  // useVictimLocation() now returns the device GPS position.
+  const victimLocation = useVictimLocation();
+  // useRescuerLocation(victimId) connects to the WS and receives the rescuer's view
+  // of the victim (or remote counterpart). For testing we pass a test victim id.
+  const rescuerLocation = useRescuerLocation('test-victim-123');
   const [updateCount, setUpdateCount] = useState(0);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
@@ -45,43 +49,43 @@ export default function LocationTestScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>🔧 Location Test Screen</Text>
 
-      {/* Rescuer Location Section */}
+      {/* Local Victim Location Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📍 Your Location (Rescuer)</Text>
+        <Text style={styles.sectionTitle}>📍 Your Location (Victim)</Text>
         <Text style={styles.locationText}>
-          {formatLocation(rescuerLocation)}
+          {formatLocation(victimLocation)}
         </Text>
-        {rescuerLocation && (
+        {victimLocation && (
           <Text style={styles.timestamp}>
-            Updated: {formatTimestamp(rescuerLocation.timestamp)}
+            Updated: {formatTimestamp(victimLocation.timestamp)}
           </Text>
         )}
-        {!rescuerLocation && (
+        {!victimLocation && (
           <Text style={styles.warning}>
             ⚠️ No location - check permissions or GPS
           </Text>
         )}
       </View>
 
-      {/* Victim Location Section */}
+      {/* Remote Rescuer/Victim Location Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🎯 Victim Location (Target)</Text>
+        <Text style={styles.sectionTitle}>🎯 Remote Location (From Server)</Text>
         <Text style={styles.locationText}>
-          {formatLocation(victimLocation)}
+          {formatLocation(rescuerLocation)}
         </Text>
-        {victimLocation && (
+        {rescuerLocation && (
           <>
             <Text style={styles.timestamp}>
-              Updated: {formatTimestamp(victimLocation.timestamp)}
+              Updated: {formatTimestamp(rescuerLocation.timestamp)}
             </Text>
             <Text style={styles.updateStats}>
               Updates received: {updateCount} | Last: {lastUpdateTime?.toLocaleTimeString() || 'N/A'}
             </Text>
           </>
         )}
-        {!victimLocation && (
+        {!rescuerLocation && (
           <Text style={styles.connecting}>
-            🔄 Connecting to victim... (check WebSocket server)
+            🔄 Connecting to server... (check WebSocket server)
           </Text>
         )}
       </View>
