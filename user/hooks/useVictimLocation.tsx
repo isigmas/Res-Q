@@ -85,7 +85,7 @@ export function useVictimLocation(): VictimLocation | null {
 
   useEffect(() => {
     // Initialize WebSocket connection
-    const ws = new WebSocket(process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3000');
+    const ws = new WebSocket('wss://resq-backend-isp4g.ondigitalocean.app');
 
     // Send location update every 3 seconds
     const interval = setInterval(() => {
