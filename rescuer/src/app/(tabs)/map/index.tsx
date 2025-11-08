@@ -18,6 +18,66 @@ interface Coordinates {
     longitude: number;
 }
 
+// Stałe dla markerów - łatwe do modyfikacji
+const MARKER_CONFIG = {
+    WRAPPER_SIZE: 35,
+    PULSE_SIZE: 25,
+    CIRCLE_SIZE: 20,
+    BORDER_WIDTH: 4,
+    BORDER_COLOR: '#ffffff',
+    PULSE_OPACITY: 0.3,
+    COLORS: {
+        RESCUER: '#4caf50',
+        TOURIST: '#ff7e7b',
+    },
+};
+
+// Komponent markera - reużywalny
+const CustomMarker = ({ 
+    color, 
+    pulseAnimation 
+}: { 
+    color: string; 
+    pulseAnimation: Animated.Value;
+}) => (
+    <View style={markerStyles.container}>
+        <Animated.View
+            style={[
+                markerStyles.pulse,
+                {
+                    backgroundColor: color,
+                    transform: [{ scale: pulseAnimation }],
+                },
+            ]}
+        />
+        <View style={[markerStyles.circle, { backgroundColor: color }]} />
+    </View>
+);
+
+// Style markerów - oddzielne dla łatwiejszej edycji
+const markerStyles = StyleSheet.create({
+    container: {
+        width: MARKER_CONFIG.WRAPPER_SIZE,
+        height: MARKER_CONFIG.WRAPPER_SIZE,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    pulse: {
+        position: 'absolute',
+        width: MARKER_CONFIG.PULSE_SIZE,
+        height: MARKER_CONFIG.PULSE_SIZE,
+        borderRadius: MARKER_CONFIG.PULSE_SIZE / 2,
+        opacity: MARKER_CONFIG.PULSE_OPACITY,
+    },
+    circle: {
+        width: MARKER_CONFIG.CIRCLE_SIZE,
+        height: MARKER_CONFIG.CIRCLE_SIZE,
+        borderRadius: MARKER_CONFIG.CIRCLE_SIZE / 2,
+        borderWidth: MARKER_CONFIG.BORDER_WIDTH,
+        borderColor: MARKER_CONFIG.BORDER_COLOR,
+    },
+});
+
 // Jasny styl mapy
 const mapStyle = [
     {
@@ -295,7 +355,7 @@ export default function RescueTrackingScreen() {
                     headerShown: true,
                     headerBackVisible: false,
                     headerStyle: {
-                        backgroundColor: "#d32f2f",
+                        backgroundColor: "#4caf50",
                     },
                     headerTintColor: "#fff",
                     headerTitle: () => (
@@ -315,7 +375,7 @@ export default function RescueTrackingScreen() {
                 }}
             />
             <View style={styles.container}>
-                {/* Pulsujący czerwony gradient na górze */}
+                {/* Pulsujący zielony gradient na górze */}
                 <Animated.View
                     style={[
                         styles.pulseShadowContainer,
@@ -326,8 +386,8 @@ export default function RescueTrackingScreen() {
                 >
                     <LinearGradient
                         colors={[
-                            "rgba(211, 47, 47, 0.8)",
-                            "rgba(211, 47, 47, 0)",
+                            "rgba(76, 175, 80, 0.8)",
+                            "rgba(76, 175, 80, 0)",
                         ]}
                         style={styles.pulseShadow}
                     />
@@ -351,24 +411,11 @@ export default function RescueTrackingScreen() {
                     <Marker
                         coordinate={rescuerLocation}
                         title="Twoja lokalizacja (Ratownik)"
-                        pinColor="#4caf50"
                     >
-                        <View style={styles.markerWrapper}>
-                            <Animated.View
-                                style={[
-                                    styles.markerPulse,
-                                    styles.rescuerMarkerPulse,
-                                    {
-                                        transform: [
-                                            { scale: rescuerMarkerPulse },
-                                        ],
-                                    },
-                                ]}
-                            />
-                            <View style={[styles.markerContainer, styles.rescuerMarkerContainer]}>
-                                <Text style={styles.markerEmoji}>👷🏻‍♂️</Text>
-                            </View>
-                        </View>
+                        <CustomMarker 
+                            color={MARKER_CONFIG.COLORS.RESCUER}
+                            pulseAnimation={rescuerMarkerPulse}
+                        />
                     </Marker>
 
                     {/* Marker turysty (czerwony) - Lokalizacja zaginionego */}
@@ -376,22 +423,11 @@ export default function RescueTrackingScreen() {
                         coordinate={touristLocation}
                         title="Zaginiony turysta"
                         description="Oczekuje na pomoc"
-                        pinColor="#ff7e7b"
                     >
-                        <View style={styles.markerWrapper}>
-                            <Animated.View
-                                style={[
-                                    styles.markerPulse,
-                                    styles.userMarkerPulse,
-                                    {
-                                        transform: [{ scale: userMarkerPulse }],
-                                    },
-                                ]}
-                            />
-                            <View style={[styles.markerContainer, styles.touristMarkerContainer]}>
-                                <Text style={styles.markerEmoji}>🆘</Text>
-                            </View>
-                        </View>
+                        <CustomMarker 
+                            color={MARKER_CONFIG.COLORS.TOURIST}
+                            pulseAnimation={userMarkerPulse}
+                        />
                     </Marker>
                 </MapView>
 
@@ -493,51 +529,6 @@ const styles = StyleSheet.create({
     },
     map: {
         flex: 1,
-    },
-    markerWrapper: {
-        width: 80,
-        height: 80,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    markerPulse: {
-        position: "absolute",
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        opacity: 0.3,
-    },
-    userMarkerPulse: {
-        backgroundColor: "#ff7e7b",
-    },
-    rescuerMarkerPulse: {
-        backgroundColor: "#4caf50",
-    },
-    markerContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        borderWidth: 4,
-        borderColor: "#fff",
-        overflow: "hidden",
-        backgroundColor: "#fff",
-        zIndex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    rescuerMarkerContainer: {
-        backgroundColor: "#4caf50",
-    },
-    touristMarkerContainer: {
-        backgroundColor: "#ff7e7b",
-    },
-    markerEmoji: {
-        fontSize: 32,
-    },
-    markerImage: {
-        width: 60,
-        height: 60,
-        resizeMode: "cover",
     },
     infoPanel: {
         position: "absolute",

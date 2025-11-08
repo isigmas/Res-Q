@@ -156,10 +156,6 @@ export const Compass: React.FC<CompassProps> = ({
         <Text style={styles.altitudeText}>
           {formatAltitudeDifference(rescuerAltitude, targetAltitude)}
         </Text>
-        <Text style={styles.bearingText}>
-          Stopnie celu: {Math.round(bearing)}° | Stopnie urządzenia:{" "}
-          {Math.round(heading)}°
-        </Text>
       </View>
     </View>
   );
