@@ -11,7 +11,7 @@ router = APIRouter()
 connections_tourist: list[WebSocket] = []
 connections_rescuer: list[WebSocket] = []
 
-sharing: bool = False
+sharing: bool = True
 
 @router.websocket("/{con_type}")
 async def websocket_connection(websocket: WebSocket, con_type: str):
