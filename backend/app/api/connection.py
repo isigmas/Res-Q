@@ -122,9 +122,9 @@ async def websocket_test(websocket: WebSocket, con_type: str):
 
             data = await websocket.receive_json()
 
-            print("----- [NEW DATA] -----")
+            print("----- [NEW DATA - TEST] -----")
             print(data)
-            print("----- [END DATA] -----")
+            print("----- [END DATA - TEST] -----")
 
     except WebSocketDisconnect:
         pass
