@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { View, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet, Platform, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
@@ -10,6 +10,24 @@ import { CloudBoltIcon } from "@/components/icons/CloudBoltIcon";
 import { ShareNodesIcon } from "@/components/icons/ShareNodesIcon";
 import { DownloadIcon } from "@/components/icons/DownloadIcon";
 import { HomeIcon } from "@/components/icons/HomeIcon";
+
+const TabBarLabel = ({ focused, title }: { focused: boolean; title: string }) => (
+    <Text
+        style={{
+            fontSize: 10,
+            fontWeight: "500",
+            letterSpacing: 0.2,
+            marginTop: 4,
+            textAlign: "center",
+            color: focused ? "#172f44" : "#9ca3af",
+            maxWidth: 70,
+        }}
+        numberOfLines={2}
+        adjustsFontSizeToFit
+    >
+        {title}
+    </Text>
+);
 
 export default function TabLayout() {
     const router = useRouter();
@@ -26,7 +44,7 @@ export default function TabLayout() {
                     tabBarStyle: {
                         backgroundColor: "#ffffff",
                         borderTopWidth: 0,
-                        height: Platform.OS === "ios" ? 55 + insets.bottom : 88,
+                        height: Platform.OS === "ios" ? 75 + insets.bottom : 105,
                         paddingBottom:
                             Platform.OS === "ios" ? insets.bottom + 2 : 12,
                         paddingLeft: 16,
@@ -41,17 +59,13 @@ export default function TabLayout() {
                         shadowOpacity: 0.1,
                         shadowRadius: 12,
                     },
-                    tabBarLabelStyle: {
-                        fontSize: 11,
-                        fontWeight: "700",
-                        letterSpacing: 0.2,
-                        marginTop: 4,
-                    },
+
                     tabBarItemStyle: {
                         paddingVertical: 4,
                         borderRadius: 16,
                     },
                     tabBarAllowFontScaling: false,
+                    tabBarLabel: () => null,
                 }}
             >
                 <Tabs.Screen
@@ -61,6 +75,9 @@ export default function TabLayout() {
                         tabBarIcon: ({ color, focused }) => (
                             <RouteIcon size={24} color={color} />
                         ),
+                        tabBarLabel: ({ focused }) => (
+                            <TabBarLabel focused={focused} title="Planowanie Tras" />
+                        ),
                     }}
                 />
                 <Tabs.Screen
@@ -69,6 +86,9 @@ export default function TabLayout() {
                         title: "Radar Pogodowy",
                         tabBarIcon: ({ color, focused }) => (
                             <CloudBoltIcon size={24} color={color} />
+                        ),
+                        tabBarLabel: ({ focused }) => (
+                            <TabBarLabel focused={focused} title="Radar Pogodowy" />
                         ),
                     }}
                 />
@@ -95,6 +115,9 @@ export default function TabLayout() {
                         tabBarIcon: ({ color, focused }) => (
                             <ShareNodesIcon size={24} color={color} />
                         ),
+                        tabBarLabel: ({ focused }) => (
+                            <TabBarLabel focused={focused} title="Udostępnij lokalizację" />
+                        ),
                     }}
                 />
                 <Tabs.Screen
@@ -103,6 +126,9 @@ export default function TabLayout() {
                         title: "Pobrane mapy",
                         tabBarIcon: ({ color, focused }) => (
                             <DownloadIcon size={24} color={color} />
+                        ),
+                        tabBarLabel: ({ focused }) => (
+                            <TabBarLabel focused={focused} title="Pobrane mapy" />
                         ),
                     }}
                 />

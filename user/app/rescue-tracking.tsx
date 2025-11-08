@@ -296,23 +296,27 @@ export default function RescueTrackingScreen() {
                 options={{
                     headerShown: true,
                     headerBackVisible: false,
-                    headerStyle: {
-                        backgroundColor: "#d32f2f",
-                    },
-                    headerTintColor: "#fff",
-                    headerTitle: () => (
-                        <View style={styles.headerContent}>
-                            <View style={styles.headerTextContainer}>
-                                <Text style={styles.headerTitle}>
-                                    Pomoc wezwana
-                                </Text>
-                                <Text style={styles.headerSubtitle}>
-                                    Ratownik jest już w drodze
-                                </Text>
+                    header: () => (
+                        <View
+                            style={{
+                                height: 120,
+                                backgroundColor: "#d32f2f",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            <View style={styles.headerContent}>
+                                <View style={styles.headerTextContainer}>
+                                    <Text style={styles.headerTitle}>
+                                        Pomoc wezwana
+                                    </Text>
+                                    <Text style={styles.headerSubtitle}>
+                                        Ratownik jest już w drodze
+                                    </Text>
+                                </View>
                             </View>
                         </View>
                     ),
-                    headerTitleAlign: "center",
                     headerShadowVisible: false,
                 }}
             />
@@ -468,10 +472,10 @@ const styles = StyleSheet.create({
     },
     headerContent: {
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-end",
     },
     headerTextContainer: {
-        paddingTop: 4,
+        paddingTop: 42,
         paddingBottom: 4,
     },
     headerTitle: {
