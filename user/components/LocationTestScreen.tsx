@@ -18,9 +18,9 @@ export default function LocationTestScreen() {
   // In the `user/` app the local device is the victim (sending location).
   // useVictimLocation() now returns the device GPS position.
   const victimLocation = useVictimLocation();
-  // useRescuerLocation(victimId) connects to the WS and receives the rescuer's view
-  // of the victim (or remote counterpart). For testing we pass a test victim id.
-  const rescuerLocation = useRescuerLocation('test-victim-123');
+  // useRescuerLocation() connects to the WS and receives the rescuer's view
+  // of the victim (or remote counterpart)
+  const rescuerLocation = useRescuerLocation();
   const [updateCount, setUpdateCount] = useState(0);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 

@@ -1,45 +1,35 @@
 /**
- * Galileo Service - WebSocket-based real-time victim location tracking
+ * Galileo Service - WebSocket-based rescue team location tracking
  * 
- * PURPOSE: Provides real-time victim location data for compass navigation via WebSocket.
- * The rescuer app subscribes to location updates for a specific victim,
- * then calculates bearing and distance from rescuer → victim.
+ * PURPOSE: Provides real-time rescuer location data for the victim's app.
+ * The victim app subscribes to location updates from their assigned rescuer,
+ * then displays the rescuer's position on map and compass.
  * 
  * ARCHITECTURE:
- * - Uses WebSocket for bi-directional, real-time communication
- * - Server pushes location updates whenever victim's position changes
- * - More efficient than HTTP polling (no unnecessary requests)
+ * - Uses WebSocket for real-time communication
+ * - Server pushes rescuer location updates to victim
+ * - Victim sends their location updates to rescuer
  * - Auto-reconnects on connection loss
  */
 
 import { Platform } from 'react-native';
 
-export interface VictimLocationData {
+export interface LocationMessage {
+  type: 'tourist' | 'rescuer';
   user_id: string;
-  latitude: number;   // Victim's latitude (target position)
-  longitude: number;  // Victim's longitude (target position)
-  altitude: number;   // Victim's altitude in meters
+  latitude: number;   // Location latitude
+  longitude: number;  // Location longitude
+  altitude: number;   // Altitude in meters
   accuracy: number;   // Location accuracy (0.0 - 1.0)
   timestamp: string;  // ISO 8601 timestamp
 }
 
-/**
- * Rescuer location data to send to server
- */
-export interface RescuerLocationMessage {
-  type: 'rescuer_location';
-  rescuer_id?: string;
-  latitude: number;
-  longitude: number;
-  altitude: number | null;
-  accuracy: number;
-  timestamp: number;
-}
+
 
 /**
  * Callback function type for receiving location updates
  */
-type LocationUpdateCallback = (location: VictimLocationData) => void;
+type LocationUpdateCallback = (location: LocationMessage) => void;
 
 /**
  * Callback function type for connection errors
@@ -77,23 +67,7 @@ export class GalileoWebSocket {
    * Establish WebSocket connection to the backend
    */
   connect(): void {
-    // TODO: Replace with actual WebSocket URL from environment config
-    const WS_URL = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3000';
-
-    // On Android emulators 'localhost' refers to the emulator itself.
-    // Map 'localhost' to the host machine IP used by the Android emulator.
-    // - Android emulator (default) -> 10.0.2.2
-    // - If you're testing on a physical device, set EXPO_PUBLIC_WS_URL to your machine's LAN IP.
-    let wsHost = WS_URL;
-    try {
-      if (Platform.OS === 'android' && wsHost.includes('localhost')) {
-        wsHost = wsHost.replace('localhost', '10.0.2.2');
-      }
-    } catch {
-      // Platform might not be available in some test environments; ignore mapping if so.
-    }
-
-    const wsEndpoint = `${wsHost}/ws/victims/${this.victimId}/location`;
+    const wsEndpoint = `${process.env.EXPO_PUBLIC_WS_URL}/tourist`;
 
     try {
       this.ws = new WebSocket(wsEndpoint);
@@ -113,13 +87,17 @@ export class GalileoWebSocket {
 
       this.ws.onmessage = (event) => {
         try {
-          const data: VictimLocationData = JSON.parse(event.data);
+          const data: LocationMessage = JSON.parse(event.data);
           
           // Validate the data has required fields
-          if (data.latitude !== undefined && data.longitude !== undefined) {
+          if (data.latitude !== undefined && 
+              data.longitude !== undefined && 
+              data.type !== undefined) {
             this.onLocationUpdate(data);
           } else {
-            console.warn('Received invalid location data:', data);
+            if (__DEV__) {
+              console.warn('Received invalid location data:', data);
+            }
           }
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error);
@@ -191,31 +169,27 @@ export class GalileoWebSocket {
   }
 
   /**
-   * Send rescuer's current location to the server
+   * Send victim's current location to the server
    * 
-   * This is called automatically when receiving victim location updates
-   * to keep the server informed of the rescuer's position.
-   * 
-   * @param location - The rescuer's current GPS location
-   * @param rescuerId - Optional rescuer identifier
+   * @param location - The victim's current GPS location
    */
-  sendRescuerLocation(location: {
+  sendVictimLocation(location: {
     lat: number;
     lon: number;
     alt: number | null;
     accuracy: number;
     timestamp: number;
-  }, rescuerId?: string): void {
+  }): void {
     if (!this.isConnected()) {
       if (__DEV__) {
-        console.warn('Cannot send rescuer location: WebSocket not connected');
+        console.warn('Cannot send victim location: WebSocket not connected');
       }
       return;
     }
 
-    const message: RescuerLocationMessage = {
-      type: 'rescuer_location',
-      rescuer_id: rescuerId,
+    const message = {
+      type: 'victim_location',
+      victim_id: this.victimId,
       latitude: location.lat,
       longitude: location.lon,
       altitude: location.alt,
@@ -227,10 +201,10 @@ export class GalileoWebSocket {
       this.ws?.send(JSON.stringify(message));
       
       if (__DEV__) {
-        console.log('Sent rescuer location to server:', message);
+        console.log('Sent victim location to server:', message);
       }
     } catch (error) {
-      console.error('Failed to send rescuer location:', error);
+      console.error('Failed to send victim location:', error);
     }
   }
 }

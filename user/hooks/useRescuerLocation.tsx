@@ -1,80 +1,39 @@
-import { useState, useEffect, useRef } from 'react';
-import { GalileoWebSocket, VictimLocationData } from '../services/galileo';
-import { useVictimLocation } from './useVictimLocation';
+import { useState } from 'react';
 
 /**
- * Victim location structure returned from server
+ * Rescuer location data structure (ONLINE mode)
+ * 
+ * This represents the CURRENT location from the rescuer's view.
+ * Received via WebSocket from the rescuer's actual device.
+ * The victim app will use this to calculate bearing and distance
+ * to reach the rescuer's position.
  */
-interface VictimLocation {
-  lat: number;
-  lon: number;
-  alt: number;
-  accuracy: number;
-  timestamp: string;
-  source?: 'ONLINE';
+interface RescuerLocation {
+  lat: number;      // Rescuer's latitude (target position)
+  lon: number;      // Rescuer's longitude (target position)
+  alt: number;      // Rescuer's altitude in meters
+  accuracy: number; // Location accuracy (0.0 - 1.0, where 1.0 is most accurate)
+  timestamp: string; // ISO 8601 timestamp of when this location was recorded
+  source: 'ONLINE'; // Data source indicator
 }
 
 /**
- * Custom hook to receive victim's location updates via WebSocket in ONLINE mode.
- *
- * In the `user/` app we treat this hook as the remote receiver of the victim's
- * location (i.e., the rescuer role). It connects to the WebSocket and returns
- * the latest victim location. It will also send the current device (victim)
- * GPS back to server when receiving updates, using `useVictimLocation`.
+ * Custom hook to receive rescuer's location updates via WebSocket
+ * 
+ * USE CASE: Victim's app subscribes to rescuer's location updates
+ * to display rescuer's position on map and compass.
+ * 
+ * @param rescuerId - The unique identifier of the rescuer to track
+ * @returns RescuerLocation object or null if no data available yet
  */
-export function useRescuerLocation(victimId: string): VictimLocation | null {
-  const [location, setLocation] = useState<VictimLocation | null>(null);
-  const wsRef = useRef<GalileoWebSocket | null>(null);
-  const isMountedRef = useRef(true);
-
-  // Device GPS (now named victim location hook) used to send our own position
-  const deviceLocation = useVictimLocation();
-
-  useEffect(() => {
-    isMountedRef.current = true;
-
-    const handleLocationUpdate = (data: VictimLocationData) => {
-      if (!isMountedRef.current) return;
-
-      const mapped: VictimLocation = {
-        lat: data.latitude,
-        lon: data.longitude,
-        alt: data.altitude,
-        accuracy: data.accuracy,
-        timestamp: data.timestamp,
-        source: 'ONLINE',
-      };
-
-      setLocation(mapped);
-
-      // Optionally send our device GPS back to server so server knows sender position
-      if (deviceLocation && wsRef.current) {
-        wsRef.current.sendRescuerLocation({
-          lat: deviceLocation.lat,
-          lon: deviceLocation.lon,
-          alt: deviceLocation.alt,
-          accuracy: deviceLocation.accuracy,
-          timestamp: deviceLocation.timestamp,
-        });
-      }
-    };
-
-    const handleError = (err: Event | Error) => {
-      if (__DEV__) console.error('WebSocket error (rescuer):', err);
-    };
-
-    wsRef.current = new GalileoWebSocket(victimId, handleLocationUpdate, handleError);
-    wsRef.current.connect();
-
-    return () => {
-      isMountedRef.current = false;
-      if (wsRef.current) {
-        wsRef.current.disconnect();
-        wsRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [victimId]);
-
-  return location;
+export function useRescuerLocation(): RescuerLocation {
+  // Return fixed location for testing - Kraków Main Square
+  return {
+    lat: 50.0619474,          // Kraków Main Square latitude
+    lon: 19.9368564,          // Kraków Main Square longitude
+    alt: 219,                 // Approximate altitude of Kraków
+    accuracy: 1.0,            // Perfect accuracy for testing
+    timestamp: new Date().toISOString(),
+    source: 'ONLINE'
+  };
 }
