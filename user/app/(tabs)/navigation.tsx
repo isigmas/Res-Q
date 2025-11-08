@@ -6,13 +6,14 @@ import {
     Pressable,
     Alert,
     ActivityIndicator,
-    ScrollView,
+    Text,
+    Platform,
+    Animated,
 } from "react-native";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { WebView } from "react-native-webview";
 import * as Location from "expo-location";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 const MAPBOX_ACCESS_TOKEN =
     "pk.eyJ1Ijoic2tvd3J4biIsImEiOiJjbWhwZGswMzUwNHBhMmlzNzJha2JqazhzIn0.CQTtvYmdrKFdM9pccP0KFQ";
@@ -26,6 +27,7 @@ interface Waypoint {
 }
 
 export default function NavigationScreen() {
+    const insets = useSafeAreaInsets();
     const webViewRef = useRef<WebView>(null);
     const [destination, setDestination] = useState("");
     const [userLocation, setUserLocation] = useState<{
@@ -37,6 +39,8 @@ export default function NavigationScreen() {
     const [isLoadingRoute, setIsLoadingRoute] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
     const [isAddingStart, setIsAddingStart] = useState(false);
+    const [showRoutePanel, setShowRoutePanel] = useState(true);
+    const panelHeight = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         (async () => {
@@ -56,7 +60,7 @@ export default function NavigationScreen() {
 
     const handleAddWaypointByName = async () => {
         if (!destination.trim()) {
-            Alert.alert("Error", "Please enter a location");
+            Alert.alert("Błąd", "Wprowadź nazwę lokalizacji");
             return;
         }
 
@@ -69,7 +73,7 @@ export default function NavigationScreen() {
             const geocodeData = await geocodeResponse.json();
 
             if (!geocodeData.features || geocodeData.features.length === 0) {
-                Alert.alert("Error", "Location not found");
+                Alert.alert("Błąd", "Nie znaleziono lokalizacji");
                 return;
             }
 
@@ -92,7 +96,7 @@ export default function NavigationScreen() {
             `);
         } catch (error) {
             console.error("Error adding waypoint:", error);
-            Alert.alert("Error", "Failed to add location");
+            Alert.alert("Błąd", "Nie udało się dodać lokalizacji");
         }
     };
 
@@ -103,7 +107,7 @@ export default function NavigationScreen() {
             if (data.type === "mapClick" && isAddingStart) {
                 const newStart: Waypoint = {
                     id: "start",
-                    name: "Start Point",
+                    name: "Punkt startowy",
                     lng: data.lng,
                     lat: data.lat,
                 };
@@ -119,7 +123,7 @@ export default function NavigationScreen() {
             } else if (data.type === "mapClick" && isAddingWaypoint) {
                 const newWaypoint: Waypoint = {
                     id: Date.now().toString(),
-                    name: `Point ${waypoints.length + 1}`,
+                    name: `Punkt ${waypoints.length + 1}`,
                     lng: data.lng,
                     lat: data.lat,
                 };
@@ -168,13 +172,13 @@ export default function NavigationScreen() {
 
     const handleUseCurrentLocation = () => {
         if (!userLocation) {
-            Alert.alert("Error", "Unable to get your current location");
+            Alert.alert("Błąd", "Nie można uzyskać Twojej lokalizacji");
             return;
         }
 
         const currentStart: Waypoint = {
             id: "start",
-            name: "My Location",
+            name: "Moja lokalizacja",
             lng: userLocation.lng,
             lat: userLocation.lat,
         };
@@ -187,20 +191,24 @@ export default function NavigationScreen() {
     };
 
     const handleCalculateRoute = async () => {
-        const routeStart = startPoint || (userLocation ? {
-            id: "current",
-            name: "Current Location",
-            lng: userLocation.lng,
-            lat: userLocation.lat,
-        } : null);
+        const routeStart =
+            startPoint ||
+            (userLocation
+                ? {
+                      id: "current",
+                      name: "Aktualna lokalizacja",
+                      lng: userLocation.lng,
+                      lat: userLocation.lat,
+                  }
+                : null);
 
         if (!routeStart) {
-            Alert.alert("Error", "Please set a start point or enable location");
+            Alert.alert("Błąd", "Ustaw punkt startowy");
             return;
         }
 
         if (waypoints.length === 0) {
-            Alert.alert("Error", "Please add at least one destination");
+            Alert.alert("Błąd", "Dodaj przynajmniej jeden przystanek");
             return;
         }
 
@@ -218,7 +226,7 @@ export default function NavigationScreen() {
             const directionsData = await directionsResponse.json();
 
             if (!directionsData.routes || directionsData.routes.length === 0) {
-                Alert.alert("Error", "No route found");
+                Alert.alert("Błąd", "Nie znaleziono trasy");
                 setIsLoadingRoute(false);
                 return;
             }
@@ -232,7 +240,7 @@ export default function NavigationScreen() {
             setIsLoadingRoute(false);
         } catch (error) {
             console.error("Error calculating route:", error);
-            Alert.alert("Error", "Failed to calculate route");
+            Alert.alert("Błąd", "Nie udało się obliczyć trasy");
             setIsLoadingRoute(false);
         }
     };
@@ -269,7 +277,9 @@ export default function NavigationScreen() {
     const map = new mapboxgl.Map({
       container: 'map',
       style: '${MAPBOX_STYLE}',
-      center: [${userLocation?.lng || 19.9495}, ${userLocation?.lat || 49.2794}],
+      center: [${userLocation?.lng || 19.9495}, ${
+        userLocation?.lat || 49.2794
+    }],
       zoom: 13
     });
 
@@ -283,7 +293,7 @@ export default function NavigationScreen() {
       ${
           userLocation
               ? `
-      new mapboxgl.Marker({ color: '#0a7ea4' })
+      new mapboxgl.Marker({ color: '#172f44' })
         .setLngLat([${userLocation.lng}, ${userLocation.lat}])
         .addTo(map);
       `
@@ -311,7 +321,7 @@ export default function NavigationScreen() {
           'line-cap': 'round'
         },
         paint: {
-          'line-color': '#DC2626',
+          'line-color': '#172f44',
           'line-width': 5,
           'line-opacity': 0.8
         }
@@ -352,7 +362,7 @@ export default function NavigationScreen() {
       if (window.startMarker) {
         window.startMarker.remove();
       }
-      window.startMarker = new mapboxgl.Marker({ color: '#00AA00' })
+      window.startMarker = new mapboxgl.Marker({ color: '#10b981' })
         .setLngLat([start.lng, start.lat])
         .setPopup(new mapboxgl.Popup().setText(start.name))
         .addTo(map);
@@ -364,7 +374,7 @@ export default function NavigationScreen() {
     };
 
     window.addWaypointMarker = function(waypoint) {
-      const marker = new mapboxgl.Marker({ color: '#FFA500' })
+      const marker = new mapboxgl.Marker({ color: '#ef4444' })
         .setLngLat([waypoint.lng, waypoint.lat])
         .setPopup(new mapboxgl.Popup().setText(waypoint.name))
         .addTo(map);
@@ -420,7 +430,9 @@ export default function NavigationScreen() {
       }
 
       map.flyTo({
-        center: [${userLocation?.lng || 19.9495}, ${userLocation?.lat || 49.2794}],
+        center: [${userLocation?.lng || 19.9495}, ${
+        userLocation?.lat || 49.2794
+    }],
         zoom: 13
       });
     };
@@ -432,151 +444,246 @@ export default function NavigationScreen() {
   `;
 
     return (
-        <ThemedView style={styles.container}>
-            {/* Route Planning Box */}
-            <View style={styles.routeBox}>
-                {/* Start Point Row */}
-                <View style={styles.routeRow}>
-                    <View style={styles.iconDot}>
-                        <View style={styles.startDot} />
-                    </View>
-                    {startPoint ? (
-                        <Pressable
-                            style={styles.locationButton}
-                            onPress={() => setStartPoint(null)}
-                        >
-                            <ThemedText style={styles.locationText} numberOfLines={1}>
-                                {startPoint.name}
-                            </ThemedText>
-                            <IconSymbol size={18} name="xmark.circle.fill" color="#999" />
-                        </Pressable>
-                    ) : (
-                        <>
-                            <Pressable
-                                style={styles.locationButton}
-                                onPress={handleUseCurrentLocation}
-                            >
-                                <IconSymbol size={18} name="location.fill" color="#0a7ea4" />
-                                <ThemedText style={styles.locationText}>My Location</ThemedText>
-                            </Pressable>
-                            <Pressable
-                                style={[
-                                    styles.pinIconButton,
-                                    isAddingStart && styles.pinIconButtonActive,
-                                ]}
-                                onPress={handleToggleAddStart}
-                            >
-                                <IconSymbol
-                                    size={20}
-                                    name="mappin.circle.fill"
-                                    color={isAddingStart ? "#DC2626" : "#666"}
-                                />
-                            </Pressable>
-                        </>
-                    )}
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+            {/* Header */}
+            <View style={styles.header}>
+                <View>
+                    <Text style={styles.title}>Planowanie Tras</Text>
+                    <Text style={styles.subtitle}>
+                        {waypoints.length > 0
+                            ? `${waypoints.length} ${
+                                  waypoints.length === 1
+                                      ? "przystanek"
+                                      : "przystanki"
+                              }`
+                            : "Dodaj przystanki"}
+                    </Text>
                 </View>
-
-                {/* Waypoints */}
-                {waypoints.map((wp, index) => (
-                    <View key={wp.id} style={styles.routeRow}>
-                        <View style={styles.iconDot}>
-                            <ThemedText style={styles.waypointNumber}>
-                                {index + 1}
-                            </ThemedText>
-                        </View>
-                        <View style={styles.locationButton}>
-                            <ThemedText style={styles.locationText} numberOfLines={1}>
-                                {wp.name}
-                            </ThemedText>
-                        </View>
-                        <Pressable
-                            style={styles.removeButton}
-                            onPress={() => handleRemoveWaypoint(wp.id)}
-                        >
-                            <IconSymbol size={18} name="xmark.circle.fill" color="#999" />
-                        </Pressable>
-                    </View>
-                ))}
-
-                {/* Add Destination Row */}
-                <View style={styles.routeRow}>
-                    <View style={styles.iconDot}>
-                        <IconSymbol size={16} name="plus.circle.fill" color="#0a7ea4" />
-                    </View>
-                    {destination ? (
-                        <>
-                            <TextInput
-                                style={styles.destinationInput}
-                                placeholder="Enter destination"
-                                placeholderTextColor="#999"
-                                value={destination}
-                                onChangeText={setDestination}
-                                onSubmitEditing={handleAddWaypointByName}
-                                autoCapitalize="none"
-                            />
-                            <Pressable
-                                style={styles.addDestButton}
-                                onPress={handleAddWaypointByName}
-                            >
-                                <IconSymbol size={20} name="arrow.right.circle.fill" color="#0a7ea4" />
-                            </Pressable>
-                        </>
-                    ) : (
-                        <>
-                            <Pressable
-                                style={styles.locationButton}
-                                onPress={() => {
-                                    // Focus input by setting a space and clearing it
-                                    setDestination(" ");
-                                    setTimeout(() => setDestination(""), 10);
-                                }}
-                            >
-                                <ThemedText style={styles.addDestText}>
-                                    Add destination
-                                </ThemedText>
-                            </Pressable>
-                            <Pressable
-                                style={[
-                                    styles.pinIconButton,
-                                    isAddingWaypoint && styles.pinIconButtonActive,
-                                ]}
-                                onPress={handleToggleAddWaypoint}
-                            >
-                                <IconSymbol
-                                    size={20}
-                                    name="mappin.circle.fill"
-                                    color={isAddingWaypoint ? "#DC2626" : "#666"}
-                                />
-                            </Pressable>
-                        </>
-                    )}
-                </View>
-
-                {/* Calculate Route Button */}
-                {waypoints.length > 0 && (
-                    <View style={styles.actionButtons}>
-                        <Pressable
-                            style={styles.calculateButton}
-                            onPress={handleCalculateRoute}
-                            disabled={isLoadingRoute}
-                        >
-                            {isLoadingRoute ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <ThemedText style={styles.calculateButtonText}>
-                                    Calculate Route
-                                </ThemedText>
-                            )}
-                        </Pressable>
-                        <Pressable
-                            style={styles.clearAllButton}
-                            onPress={handleClearAll}
-                        >
-                            <IconSymbol size={20} name="trash" color="#DC2626" />
-                        </Pressable>
-                    </View>
-                )}
+                <Pressable
+                    style={styles.toggleButton}
+                    onPress={() => setShowRoutePanel(!showRoutePanel)}
+                >
+                    <Ionicons
+                        name={showRoutePanel ? "chevron-up" : "chevron-down"}
+                        size={24}
+                        color="#172f44"
+                    />
+                </Pressable>
             </View>
+
+            {/* Route Planning Panel */}
+            {showRoutePanel && (
+                <View style={styles.routePanel}>
+                    <View style={styles.routeCard}>
+                        {/* Start Point */}
+                        <View style={styles.routeItem}>
+                            <View style={styles.startDot} />
+                            {startPoint ? (
+                                <View style={styles.locationRow}>
+                                    <Text
+                                        style={styles.locationName}
+                                        numberOfLines={1}
+                                    >
+                                        {startPoint.name}
+                                    </Text>
+                                    <Pressable
+                                        onPress={() => setStartPoint(null)}
+                                        style={styles.removeIconSmall}
+                                    >
+                                        <Ionicons
+                                            name="close-circle"
+                                            size={18}
+                                            color="#9ca3af"
+                                        />
+                                    </Pressable>
+                                </View>
+                            ) : (
+                                <View style={styles.locationRow}>
+                                    <Pressable
+                                        style={styles.actionButtonCompact}
+                                        onPress={handleUseCurrentLocation}
+                                    >
+                                        <Ionicons
+                                            name="navigate"
+                                            size={16}
+                                            color="#172f44"
+                                        />
+                                        <Text
+                                            style={
+                                                styles.actionButtonTextCompact
+                                            }
+                                        >
+                                            Moja lokalizacja
+                                        </Text>
+                                    </Pressable>
+                                    <Pressable
+                                        style={[
+                                            styles.pinButtonSmall,
+                                            isAddingStart &&
+                                                styles.pinButtonSmallActive,
+                                        ]}
+                                        onPress={handleToggleAddStart}
+                                    >
+                                        <Ionicons
+                                            name="location"
+                                            size={16}
+                                            color={
+                                                isAddingStart
+                                                    ? "#fff"
+                                                    : "#172f44"
+                                            }
+                                        />
+                                    </Pressable>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Waypoints */}
+                        {waypoints.map((wp, index) => (
+                            <View key={wp.id} style={styles.routeItem}>
+                                <View style={styles.waypointNumber}>
+                                    <Text style={styles.waypointNumberText}>
+                                        {index + 1}
+                                    </Text>
+                                </View>
+                                <View style={styles.locationRow}>
+                                    <Text
+                                        style={styles.locationName}
+                                        numberOfLines={1}
+                                    >
+                                        {wp.name}
+                                    </Text>
+                                    <Pressable
+                                        onPress={() =>
+                                            handleRemoveWaypoint(wp.id)
+                                        }
+                                        style={styles.removeIconSmall}
+                                    >
+                                        <Ionicons
+                                            name="trash-outline"
+                                            size={16}
+                                            color="#ef4444"
+                                        />
+                                    </Pressable>
+                                </View>
+                            </View>
+                        ))}
+
+                        {/* Add Waypoint */}
+                        <View style={styles.routeItem}>
+                            <Ionicons
+                                name="add-circle-outline"
+                                size={20}
+                                color="#9ca3af"
+                            />
+                            {destination ? (
+                                <View style={styles.locationRow}>
+                                    <TextInput
+                                        style={styles.inputCompact}
+                                        placeholder="Wpisz nazwę miejsca..."
+                                        placeholderTextColor="#9ca3af"
+                                        value={destination}
+                                        onChangeText={setDestination}
+                                        onSubmitEditing={
+                                            handleAddWaypointByName
+                                        }
+                                        autoCapitalize="none"
+                                        autoFocus
+                                    />
+                                    <Pressable
+                                        onPress={handleAddWaypointByName}
+                                    >
+                                        <Ionicons
+                                            name="arrow-forward-circle"
+                                            size={24}
+                                            color="#172f44"
+                                        />
+                                    </Pressable>
+                                </View>
+                            ) : (
+                                <View style={styles.locationRow}>
+                                    <Pressable
+                                        style={styles.actionButtonCompact}
+                                        onPress={() => setDestination(" ")}
+                                    >
+                                        <Ionicons
+                                            name="search-outline"
+                                            size={16}
+                                            color="#172f44"
+                                        />
+                                        <Text
+                                            style={
+                                                styles.actionButtonTextCompact
+                                            }
+                                        >
+                                            Wpisz lokalizację
+                                        </Text>
+                                    </Pressable>
+                                    <Pressable
+                                        style={[
+                                            styles.pinButtonSmall,
+                                            isAddingWaypoint &&
+                                                styles.pinButtonSmallActive,
+                                        ]}
+                                        onPress={handleToggleAddWaypoint}
+                                    >
+                                        <Ionicons
+                                            name="location"
+                                            size={16}
+                                            color={
+                                                isAddingWaypoint
+                                                    ? "#fff"
+                                                    : "#172f44"
+                                            }
+                                        />
+                                    </Pressable>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Action Buttons */}
+                    {waypoints.length > 0 && (
+                        <View style={styles.actionButtonsContainer}>
+                            <Pressable
+                                style={styles.calculateButton}
+                                onPress={handleCalculateRoute}
+                                disabled={isLoadingRoute}
+                            >
+                                {isLoadingRoute ? (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#fff"
+                                    />
+                                ) : (
+                                    <>
+                                        <Ionicons
+                                            name="navigate"
+                                            size={20}
+                                            color="#fff"
+                                        />
+                                        <Text
+                                            style={styles.calculateButtonText}
+                                        >
+                                            Oblicz trasę
+                                        </Text>
+                                    </>
+                                )}
+                            </Pressable>
+                            <Pressable
+                                style={styles.clearButton}
+                                onPress={handleClearAll}
+                            >
+                                <Ionicons
+                                    name="trash-outline"
+                                    size={20}
+                                    color="#ef4444"
+                                />
+                            </Pressable>
+                        </View>
+                    )}
+                </View>
+            )}
 
             {/* Map */}
             <WebView
@@ -587,145 +694,232 @@ export default function NavigationScreen() {
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 onMessage={handleMapMessage}
-                onError={(syntheticEvent) => {
-                    const { nativeEvent } = syntheticEvent;
-                    console.error("WebView error: ", nativeEvent);
-                }}
-                onLoadEnd={() => {
-                    console.log("WebView loaded successfully");
-                }}
             />
-        </ThemedView>
+
+            {/* Start Navigation Button (Fixed at bottom) */}
+            {waypoints.length >= 1 && (
+                <View
+                    style={[
+                        styles.startButtonContainer,
+                        {
+                            paddingBottom:
+                                Platform.OS === "ios" ? insets.bottom + 90 : 90,
+                        },
+                    ]}
+                >
+                    <Pressable style={styles.startButton}>
+                        <Ionicons name="play-circle" size={24} color="#fff" />
+                        <Text style={styles.startButtonText}>
+                            Rozpocznij nawigację
+                        </Text>
+                    </Pressable>
+                </View>
+            )}
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#F5F5FA",
     },
-    routeBox: {
-        position: "absolute",
-        top: 20,
-        left: 20,
-        right: 20,
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 12,
-        zIndex: 10,
-        elevation: 6,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-    },
-    routeRow: {
+    header: {
         flexDirection: "row",
+        justifyContent: "space-between",
         alignItems: "center",
-        minHeight: 48,
-        borderBottomWidth: 1,
-        borderBottomColor: "#e0e0e0",
-        paddingVertical: 4,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        backgroundColor: "#F5F5FA",
     },
-    iconDot: {
-        width: 32,
-        height: 32,
+    title: {
+        fontSize: 32,
+        fontWeight: "700",
+        color: "#172f44",
+        marginBottom: 4,
+        letterSpacing: -0.5,
+    },
+    subtitle: {
+        fontSize: 13,
+        color: "#6b7280",
+        fontWeight: "500",
+    },
+    toggleButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: "#fff",
         justifyContent: "center",
         alignItems: "center",
-        marginRight: 8,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    routePanel: {
+        backgroundColor: "#F5F5FA",
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        maxHeight: "60%",
+    },
+    routeCard: {
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        padding: 12,
+        marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 3,
+        gap: 8,
+    },
+    routeItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        paddingVertical: 4,
     },
     startDot: {
         width: 12,
         height: 12,
         borderRadius: 6,
-        backgroundColor: "#00AA00",
+        backgroundColor: "#10b981",
     },
     waypointNumber: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: "#0a7ea4",
-        color: "#fff",
-        textAlign: "center",
-        lineHeight: 24,
-        fontWeight: "bold",
-        fontSize: 13,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: "#ef4444",
+        justifyContent: "center",
+        alignItems: "center",
     },
-    locationButton: {
+    waypointNumberText: {
+        color: "#fff",
+        fontSize: 11,
+        fontWeight: "700",
+    },
+    locationRow: {
         flex: 1,
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
-        paddingVertical: 8,
     },
-    locationText: {
-        fontSize: 15,
+    locationName: {
         flex: 1,
+        fontSize: 14,
+        color: "#172f44",
+        fontWeight: "500",
     },
-    addDestText: {
-        fontSize: 15,
-        color: "#666",
+    removeIconSmall: {
+        padding: 4,
     },
-    pinIconButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: "center",
-        alignItems: "center",
-        marginLeft: 4,
-    },
-    pinIconButtonActive: {
-        backgroundColor: "#FFE5E5",
-    },
-    destinationInput: {
+    actionButtonCompact: {
         flex: 1,
-        fontSize: 15,
-        paddingVertical: 8,
-        color: "#000",
-    },
-    addDestButton: {
-        width: 36,
-        height: 36,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    removeButton: {
-        width: 36,
-        height: 36,
-        justifyContent: "center",
-        alignItems: "center",
-        marginLeft: 4,
-    },
-    actionButtons: {
         flexDirection: "row",
         alignItems: "center",
+        gap: 6,
+        backgroundColor: "#F5F5FA",
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+    },
+    actionButtonTextCompact: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: "#172f44",
+    },
+    pinButtonSmall: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: "#e8f4fd",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    pinButtonSmallActive: {
+        backgroundColor: "#172f44",
+    },
+    inputCompact: {
+        flex: 1,
+        fontSize: 14,
+        color: "#172f44",
+        fontWeight: "500",
+        paddingVertical: 4,
+    },
+    actionButtonsContainer: {
+        flexDirection: "row",
         gap: 12,
-        marginTop: 12,
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: "#e0e0e0",
+        marginTop: 4,
     },
     calculateButton: {
         flex: 1,
-        height: 44,
-        backgroundColor: "#0a7ea4",
-        borderRadius: 22,
-        justifyContent: "center",
+        flexDirection: "row",
         alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        backgroundColor: "#172f44",
+        padding: 16,
+        borderRadius: 16,
+        shadowColor: "#172f44",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
     },
     calculateButtonText: {
         color: "#fff",
         fontSize: 16,
-        fontWeight: "600",
+        fontWeight: "700",
     },
-    clearAllButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: "#f5f5f5",
+    clearButton: {
+        width: 52,
+        height: 52,
+        backgroundColor: "#fee2e2",
+        borderRadius: 16,
         justifyContent: "center",
         alignItems: "center",
     },
     map: {
         flex: 1,
+    },
+    startButtonContainer: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 20,
+    },
+    startButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 12,
+        backgroundColor: "#10b981",
+        padding: 18,
+        borderRadius: 20,
+        shadowColor: "#10b981",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    startButtonText: {
+        color: "#fff",
+        fontSize: 18,
+        fontWeight: "700",
     },
 });
