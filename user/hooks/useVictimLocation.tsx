@@ -74,50 +74,43 @@ export interface VictimLocation {
 }
 
 export function useVictimLocation(): VictimLocation | null {
-  const [location, setLocation] = useState<VictimLocation | null>(null);
-  const [hasPermission, setHasPermission] = useState(false);
+  const [location, _] = useState<VictimLocation>({
+    // Hardcoded location near Kasprowy Wierch in Tatra Mountains
+    lat: 49.232167,
+    lon: 19.981778,
+    alt: 1987, // Height of Kasprowy Wierch in meters
+    accuracy: 1.0,
+    timestamp: Date.now(),
+  });
 
   useEffect(() => {
-    let subscription: Location.LocationSubscription | null = null;
+    // Initialize WebSocket connection
+    const ws = new WebSocket(process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3000');
 
-    const init = async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          if (__DEV__) console.warn('Location permission denied (victim)');
-          setHasPermission(false);
-          return;
+    // Send location update every 3 seconds
+    const interval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          user_id: "test-victim-123",
+          latitude: location.lat,
+          longitude: location.lon,
+          altitude: location.alt,
+          accuracy: location.accuracy,
+          timestamp: new Date().toISOString()
+        }));
+
+        if (__DEV__) {
+          console.log('Sent victim location:', location);
         }
-
-        setHasPermission(true);
-
-        subscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 1000,
-            distanceInterval: 5,
-          },
-          (pos) => {
-            setLocation({
-              lat: pos.coords.latitude,
-              lon: pos.coords.longitude,
-              alt: pos.coords.altitude,
-              accuracy: pos.coords.accuracy || 0,
-              timestamp: pos.timestamp,
-            });
-          }
-        );
-      } catch (error) {
-        if (__DEV__) console.error('Failed to initialize victim location:', error);
       }
-    };
+    }, 3000);
 
-    init();
-
+    // Cleanup
     return () => {
-      if (subscription) subscription.remove();
+      clearInterval(interval);
+      ws.close();
     };
   }, []);
 
-  return hasPermission ? location : null;
+  return location;
 }
