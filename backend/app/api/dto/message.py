@@ -12,7 +12,7 @@ class Message:
                  latitude: float,
                  longitude: float,
                  altitude: float,
-                 accuracy: float,
+                 accuracy: int,
                  timestamp: int,
                  user_id: str = None,
     ):
