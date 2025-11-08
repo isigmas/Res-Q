@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    Dimensions,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { useCompass } from "../hooks/useCompass";
 
@@ -63,7 +63,7 @@ export const Compass: React.FC<CompassProps> = ({
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Getting your location...</Text>
+        <Text style={styles.loadingText}>Obliczanie lokalizacji...</Text>
       </View>
     );
   }
