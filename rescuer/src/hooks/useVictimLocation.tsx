@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GalileoWebSocket, VictimLocationData } from '../services/galileo';
 import { useRescuerLocation } from './useRescuerLocation';
 
