@@ -64,9 +64,15 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
 
             elif con_type == User.TOURIST and data.get("type_msg", None) == "start_rescue":
                 sharing = True
+                await send_to(User.RESCUER, Message(
+                    type_msg="start_rescue"
+                ))
 
-            elif con_type == User.TOURIST and data.get("type_msg", None) == "start_rescue":
+            elif con_type == User.RESCUER and data.get("type_msg", None) == "stop_rescue":
                 sharing = False
+                await send_to(User.TOURIST, Message(
+                    type_msg="stop_rescue"
+                ))
 
     except WebSocketDisconnect:
         connections.remove(websocket)
@@ -80,7 +86,10 @@ async def send_to(receiver_type: User, msg: Message):
         receiver_list = connections_rescuer
 
     for receiver in receiver_list:
-        await receiver.send_json(msg.to_dict())
+        await receiver.send_json({
+            "type": msg.type_msg,
+            "data": msg.to_dict()
+        })
 
 
 @router.websocket("/test/{con_type}")
