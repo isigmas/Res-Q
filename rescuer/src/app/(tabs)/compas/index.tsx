@@ -1,7 +1,8 @@
 import { Compass } from "@/src/components/Compas";
+import { useRescuerSocket } from "@/src/contexts/WebSocketContext";
 import { Picker } from "@react-native-picker/picker";
-import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 interface Location {
   coordinates: {
@@ -28,11 +29,43 @@ const LocationData: Location[] = [
   },
 ];
 const Compas = () => {
+  const { lostPersonLocation } = useRescuerSocket();
   const [currentLocation, setCurrentLocation] = useState<Location>(
     LocationData[0]
   );
-  const handleLocationSelect = (location: Location) => {
-    setCurrentLocation(location);
+  const [selectedValue, setSelectedValue] = useState<string>("Nowy Targ");
+
+  useEffect(() => {
+    if (selectedValue === "Zaginiony" && lostPersonLocation) {
+      setCurrentLocation({
+        coordinates: {
+          latitude: lostPersonLocation.latitude,
+          longitude: lostPersonLocation.longitude,
+        },
+        name: "Zaginiony",
+      });
+    }
+  }, [lostPersonLocation, selectedValue]);
+
+  const handleLocationSelect = (itemValue: string) => {
+    setSelectedValue(itemValue);
+    
+    if (itemValue === "Zaginiony") {
+      if (lostPersonLocation) {
+        setCurrentLocation({
+          coordinates: {
+            latitude: lostPersonLocation.latitude,
+            longitude: lostPersonLocation.longitude,
+          },
+          name: "Zaginiony",
+        });
+      }
+    } else {
+      const selected = LocationData.find((loc) => loc.name === itemValue);
+      if (selected) {
+        setCurrentLocation(selected);
+      }
+    }
   };
 
   return (
@@ -41,18 +74,27 @@ const Compas = () => {
         targetCoordinates={currentLocation.coordinates}
         targetName={currentLocation.name}
       />
+      {selectedValue === "Zaginiony" && !lostPersonLocation && (
+        <View style={styles.warningContainer}>
+          <Text style={styles.warningText}>
+            Czekam na lokalizację zaginionego...
+          </Text>
+        </View>
+      )}
       <Picker
-        selectedValue={currentLocation.name}
-        onValueChange={(itemValue) => {
-          const selected = LocationData.find((loc) => loc.name === itemValue);
-          if (selected) handleLocationSelect(selected);
-        }}
+        selectedValue={selectedValue}
+        onValueChange={handleLocationSelect}
         style={styles.picker}
         itemStyle={styles.item}
       >
         {LocationData.map((loc) => (
           <Picker.Item key={loc.name} label={loc.name} value={loc.name} />
         ))}
+        <Picker.Item 
+          key="Zaginiony" 
+          label="Zaginiony" 
+          value="Zaginiony" 
+        />
       </Picker>
     </>
   );
@@ -72,6 +114,19 @@ const styles = StyleSheet.create({
   item: {
     fontSize: 18,
     color: "#000000",
+  },
+  warningContainer: {
+    backgroundColor: "#FFF3CD",
+    padding: 10,
+    margin: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FFC107",
+  },
+  warningText: {
+    fontSize: 14,
+    color: "#856404",
+    textAlign: "center",
   },
 });
 
