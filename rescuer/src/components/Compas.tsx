@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import {
-  ActivityIndicator,
-  Animated,
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Animated,
+    Dimensions,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 import { useCompass } from "../hooks/useCompass";
 
