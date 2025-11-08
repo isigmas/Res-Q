@@ -29,6 +29,10 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
         while True:
             data = await websocket.receive_json()
 
+            print("----- [NEW DATA] -----")
+            print(data)
+            print("----- [END DATA] -----")
+
             # ----- Forwarding location messages ----- #
 
             if sharing and con_type == User.TOURIST and data.get("type_msg", None) == "tourist_location":
