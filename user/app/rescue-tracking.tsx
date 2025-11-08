@@ -11,13 +11,8 @@ import { useEffect, useState, useRef } from "react";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { Stack } from "expo-router";
-import { WebView } from "react-native-webview";
-import { Asset } from "expo-asset";
-import { readAsStringAsync } from "expo-file-system/legacy";
-
-const MAPBOX_ACCESS_TOKEN =
-    "pk.eyJ1Ijoic2tvd3J4biIsImEiOiJjbWhwZGswMzUwNHBhMmlzNzJha2JqazhzIn0.CQTtvYmdrKFdM9pccP0KFQ";
-const MAPBOX_STYLE = "mapbox://styles/mapbox/outdoors-v12";
+import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import { useUserSocket } from "@/contexts/WebSocketContext";
 
 interface Coordinates {
     latitude: number;
@@ -26,29 +21,26 @@ interface Coordinates {
 
 export default function RescueTrackingScreen() {
     const router = useRouter();
-    const webViewRef = useRef<WebView>(null);
+    const mapRef = useRef<MapView>(null);
+    const { rescuerLocation: rescuerLocationFromWS } = useUserSocket();
 
     const [userLocation, setUserLocation] = useState<Coordinates>({
         latitude: 50.0614,
         longitude: 19.9366,
     });
-    const [rescuerLocation] = useState<Coordinates>({
+    const [rescuerLocation, setRescuerLocation] = useState<Coordinates>({
         latitude: 51.1079,
         longitude: 17.0385,
     });
-    const [distance] = useState<number>(2.3);
-    const [eta] = useState<number>(8);
+    const [distance, setDistance] = useState<number>(2.3);
+    const [eta, setEta] = useState<number>(8);
     const [isLoading, setIsLoading] = useState(true);
-    const [avatarsLoaded, setAvatarsLoaded] = useState(false);
-    const [userAvatarUri, setUserAvatarUri] = useState<string>("");
-    const [rescuerAvatarUri, setRescuerAvatarUri] = useState<string>("");
 
     // Animacja pulsowania dla czerwonego cienia
     const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
     useEffect(() => {
         getUserLocation();
-        loadAvatars();
 
         // Uruchom animację pulsowania
         Animated.loop(
@@ -67,37 +59,72 @@ export default function RescueTrackingScreen() {
         ).start();
     }, []);
 
-    const loadAvatars = async () => {
-        try {
-            const [userAsset, rescuerAsset] = await Asset.loadAsync([
-                require("@/assets/images/user-avatar.png"),
-                require("@/assets/images/rescurer.png"),
-            ]);
-
-            // Pobierz URI lokalnych plików
-            const userUri = userAsset.localUri || userAsset.uri;
-            const rescuerUri = rescuerAsset.localUri || rescuerAsset.uri;
-
-            console.log("User URI:", userUri);
-            console.log("Rescuer URI:", rescuerUri);
-
-            // Konwertuj do base64
-            const userBase64 = await readAsStringAsync(userUri, {
-                encoding: "base64",
-            });
-            const rescuerBase64 = await readAsStringAsync(rescuerUri, {
-                encoding: "base64",
-            });
-
-            setUserAvatarUri(`data:image/png;base64,${userBase64}`);
-            setRescuerAvatarUri(`data:image/png;base64,${rescuerBase64}`);
-            setAvatarsLoaded(true);
-        } catch (error) {
-            console.error("Error loading avatars:", error);
-            // Użyj domyślnych kolorów jako fallback
-            setAvatarsLoaded(true);
-        }
+    // Funkcja do obliczania odległości między dwoma punktami (Haversine formula)
+    const calculateDistance = (
+        lat1: number,
+        lon1: number,
+        lat2: number,
+        lon2: number
+    ): number => {
+        const R = 6371; // Promień Ziemi w km
+        const dLat = ((lat2 - lat1) * Math.PI) / 180;
+        const dLon = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((lat1 * Math.PI) / 180) *
+                Math.cos((lat2 * Math.PI) / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     };
+
+    // Aktualizuj lokalizację ratownika z WebSocket
+    useEffect(() => {
+        if (
+            rescuerLocationFromWS &&
+            rescuerLocationFromWS.data &&
+            typeof rescuerLocationFromWS.data.latitude === "number" &&
+            typeof rescuerLocationFromWS.data.longitude === "number"
+        ) {
+            console.log(
+                "[RescueTracking] Aktualizacja lokalizacji ratownika:",
+                rescuerLocationFromWS
+            );
+
+            const lat = rescuerLocationFromWS.data.latitude;
+            const lng = rescuerLocationFromWS.data.longitude;
+
+            setRescuerLocation({
+                latitude: lat,
+                longitude: lng,
+            });
+
+            // Oblicz odległość i ETA
+            const dist = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                lat,
+                lng
+            );
+            setDistance(dist);
+
+            // Załóżmy średnią prędkość 40 km/h
+            const estimatedTime = (dist / 40) * 60; // w minutach
+            setEta(Math.round(estimatedTime));
+
+            // Dopasuj widok mapy do obu markerów
+            if (mapRef.current) {
+                mapRef.current.fitToCoordinates(
+                    [userLocation, { latitude: lat, longitude: lng }],
+                    {
+                        edgePadding: { top: 100, bottom: 350, left: 50, right: 50 },
+                        animated: true,
+                    }
+                );
+            }
+        }
+    }, [rescuerLocationFromWS, userLocation]);
 
     const getUserLocation = async () => {
         try {
@@ -121,7 +148,7 @@ export default function RescueTrackingScreen() {
         }
     };
 
-    if (isLoading || !avatarsLoaded) {
+    if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#4caf50" />
@@ -131,122 +158,6 @@ export default function RescueTrackingScreen() {
             </View>
         );
     }
-
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-
-    .custom-marker {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      border: 4px solid white;
-      cursor: pointer;
-      background-size: cover;
-      background-position: center;
-      transition: transform 0.2s;
-      position: relative;
-    }
-
-    .custom-marker:hover {
-      transform: scale(1.1);
-    }
-
-    .custom-marker.user {
-      border-color: #fff;
-      animation: pulse-user 2s infinite;
-    }
-
-    .custom-marker.rescuer {
-      border-color: #fff;
-      animation: pulse-rescuer 2s infinite;
-    }
-
-    @keyframes pulse-user {
-      0% {
-        box-shadow: 0 0 0 0 rgba(255, 126, 123, 0.7);
-      }
-      50% {
-        box-shadow: 0 0 0 20px rgba(255, 126, 123, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(255, 126, 123, 0);
-      }
-    }
-
-    @keyframes pulse-rescuer {
-      0% {
-        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
-      }
-      50% {
-        box-shadow: 0 0 0 20px rgba(76, 175, 80, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
-  <script>
-    mapboxgl.accessToken = '${MAPBOX_ACCESS_TOKEN}';
-
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: '${MAPBOX_STYLE}',
-      center: [${userLocation.longitude}, ${userLocation.latitude}],
-      zoom: 13
-    });
-
-    map.on('load', () => {
-      // Custom marker dla użytkownika
-      const userMarkerEl = document.createElement('div');
-      userMarkerEl.className = 'custom-marker user';
-      userMarkerEl.style.backgroundImage = "url('${userAvatarUri}')";
-
-      new mapboxgl.Marker({ element: userMarkerEl, anchor: 'center' })
-        .setLngLat([${userLocation.longitude}, ${userLocation.latitude}])
-        .setPopup(new mapboxgl.Popup({ offset: 35 }).setHTML(
-          '<div style="text-align: center; padding: 8px;"><strong>Twoja lokalizacja</strong></div>'
-        ))
-        .addTo(map);
-
-      // Custom marker dla ratownika
-      const rescuerMarkerEl = document.createElement('div');
-      rescuerMarkerEl.className = 'custom-marker rescuer';
-      rescuerMarkerEl.style.backgroundImage = "url('${rescuerAvatarUri}')";
-
-      new mapboxgl.Marker({ element: rescuerMarkerEl, anchor: 'center' })
-        .setLngLat([${rescuerLocation.longitude}, ${rescuerLocation.latitude}])
-        .setPopup(new mapboxgl.Popup({ offset: 35 }).setHTML(
-          '<div style="text-align: center; padding: 8px;"><strong>Ratownik</strong><br/><span style="color: #4caf50; font-size: 12px;">W drodze do Ciebie</span></div>'
-        ))
-        .addTo(map);
-
-      // Dopasuj widok do obu markerów
-      const bounds = new mapboxgl.LngLatBounds();
-      bounds.extend([${userLocation.longitude}, ${userLocation.latitude}]);
-      bounds.extend([${rescuerLocation.longitude}, ${rescuerLocation.latitude}]);
-
-      map.fitBounds(bounds, {
-        padding: { top: 100, bottom: 350, left: 50, right: 50 }
-      });
-    });
-
-    map.addControl(new mapboxgl.NavigationControl());
-  </script>
-</body>
-</html>
-  `;
 
     return (
         <>
@@ -293,19 +204,49 @@ export default function RescueTrackingScreen() {
                     />
                 </Animated.View>
 
-                {/* Mapa Mapbox */}
-                <WebView
-                    ref={webViewRef}
-                    originWhitelist={["*"]}
-                    source={{ html: htmlContent }}
+                {/* Mapa */}
+                <MapView
+                    ref={mapRef}
                     style={styles.map}
-                    javaScriptEnabled={true}
-                    domStorageEnabled={true}
-                    onError={(syntheticEvent) => {
-                        const { nativeEvent } = syntheticEvent;
-                        console.error("WebView error: ", nativeEvent);
+                    provider={PROVIDER_DEFAULT}
+                    initialRegion={{
+                        latitude: userLocation.latitude,
+                        longitude: userLocation.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
                     }}
-                />
+                    showsUserLocation={false}
+                    showsMyLocationButton={false}
+                >
+                    {/* Marker użytkownika */}
+                    <Marker
+                        coordinate={userLocation}
+                        title="Twoja lokalizacja"
+                        pinColor="#ff7e7b"
+                    >
+                        <View style={styles.markerContainer}>
+                            <Image
+                                source={require("@/assets/images/user-avatar.png")}
+                                style={styles.markerImage}
+                            />
+                        </View>
+                    </Marker>
+
+                    {/* Marker ratownika */}
+                    <Marker
+                        coordinate={rescuerLocation}
+                        title="Ratownik"
+                        description="W drodze do Ciebie"
+                        pinColor="#4caf50"
+                    >
+                        <View style={styles.markerContainer}>
+                            <Image
+                                source={require("@/assets/images/rescurer.png")}
+                                style={styles.markerImage}
+                            />
+                        </View>
+                    </Marker>
+                </MapView>
 
                 {/* Panel informacyjny na dole */}
                 <View style={styles.infoPanel}>
@@ -344,7 +285,7 @@ export default function RescueTrackingScreen() {
                                 Ratownik Michał
                             </Text>
                             <Text style={styles.rescuerRole}>
-                                Certyfikowany ratownik medyczny
+                                Ratownik TOPR
                             </Text>
                         </View>
                     </View>
@@ -406,6 +347,20 @@ const styles = StyleSheet.create({
     },
     map: {
         flex: 1,
+    },
+    markerContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        borderWidth: 4,
+        borderColor: "#fff",
+        overflow: "hidden",
+        backgroundColor: "#fff",
+    },
+    markerImage: {
+        width: 60,
+        height: 60,
+        resizeMode: "cover",
     },
     infoPanel: {
         position: "absolute",

@@ -25,8 +25,15 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
     try:
         while True:
             data = await websocket.receive_json()
+            print(f"[INFO]: Received data from {con_type}: {data}")
 
-            if con_type == User.TOURIST and data.get("type_msg", None) == "tourist_location":
+            # Tourist sends start/stop rescue
+            if con_type == User.TOURIST and data.get("type_msg") in ["start_rescue", "stop_rescue"]:
+                print(f"[INFO]: Forwarding {data.get('type_msg')} to rescuers")
+                await send_to(User.RESCUER, data)
+
+            # Tourist sends their location
+            elif con_type == User.TOURIST and data.get("type_msg") == "tourist_location":
                 new_mes = Message(
                     type_msg="tourist_location",
                     latitude=data["latitude"],
@@ -35,9 +42,11 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                     accuracy=data["accuracy"],
                     timestamp=data["timestamp"]
                 )
+                print(f"[INFO]: Forwarding tourist location to rescuers")
                 await send_to(User.RESCUER, new_mes)
 
-            elif con_type == User.TOURIST and data.get("type_msg", None) == "rescuer_location":
+            # Rescuer sends their location
+            elif con_type == User.RESCUER and data.get("type_msg") == "rescuer_location":
                 new_mes = Message(
                     type_msg="rescuer_location",
                     latitude=data["latitude"],
@@ -46,6 +55,7 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                     accuracy=data["accuracy"],
                     timestamp=data["timestamp"]
                 )
+                print(f"[INFO]: Forwarding rescuer location to tourists")
                 await send_to(User.TOURIST, new_mes)
 
     except WebSocketDisconnect:
@@ -53,11 +63,15 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
         print("[INFO]: Connection Closed")
 
 
-async def send_to(receiver_type: User, msg: Message):
+async def send_to(receiver_type: User, msg):
     if receiver_type == User.TOURIST:
         receiver_list = connections_tourist
     else:
         receiver_list = connections_rescuer
 
+    # If msg is a Message object, convert to dict
+    if isinstance(msg, Message):
+        msg = msg.to_dict()
+
     for receiver in receiver_list:
-        await receiver.send_json(msg.to_dict())
+        await receiver.send_json(msg)

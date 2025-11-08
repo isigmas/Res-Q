@@ -1,10 +1,22 @@
 import React from "react";
-import LocationTestScreen from "@/components/LocationTestScreen";
-import SOSButton from "@/components/SOSButton";
-const Compas = () => {
-  // TEMPORARY: Using test screen to verify WebSocket functionality
-  // Replace with actual compass component after testing
-  return <LocationTestScreen/>;
+import { StyleSheet, View } from "react-native";
+import { LocationDisplay } from "@/components/LocationDisplay";
+
+const Dummy = () => {
+  return (
+    <View style={styles.container}>
+      <LocationDisplay />
+    </View>
+  );
 };
 
-export default Compas;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+});
+
+export default Dummy;

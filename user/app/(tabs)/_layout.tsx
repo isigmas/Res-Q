@@ -13,11 +13,6 @@ import { DownloadIcon } from "@/components/icons/DownloadIcon";
 export default function TabLayout() {
     const router = useRouter();
 
-    const handleSOSPress = () => {
-        console.log("SOS button pressed");
-        // TODO: Implement SOS functionality
-    };
-
     return (
         <View style={styles.container}>
             <Tabs
@@ -132,38 +127,5 @@ const styles = StyleSheet.create({
     },
     homeIconFocused: {
         backgroundColor: "#172f44",
-    },
-    sosButton: {
-        position: "absolute",
-        bottom: 100,
-        left: 10,
-        right: 10,
-        height: 100,
-        borderRadius: 35, // lub 35 dla zaokrąglonych rogów tylko u góry
-        backgroundColor: "#bd382f",
-        borderColor: "#d5524c",
-        borderWidth: 3,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    sosButtonPressed: {
-        opacity: 0.8,
-        transform: [{ scale: 0.95 }],
-    },
-    sosContent: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    sosText: {
-        color: "#fff",
-        fontSize: 24,
-        fontWeight: "bold",
-    },
-    sosSubtext: {
-        color: "#fff",
-        fontSize: 12,
-        marginTop: 2,
-        opacity: 0.9,
     },
 });
