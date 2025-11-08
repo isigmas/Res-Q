@@ -46,7 +46,7 @@ const Compas = () => {
 
   return (
     <>
-      <Compass targetCoordinates={targetCoordinates} targetName={"Victim"} />
+      <Compass targetCoordinates={targetCoordinates} targetName={""} />
     </>
   );
 };
