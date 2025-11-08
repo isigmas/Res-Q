@@ -1,7 +1,7 @@
 from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect
-from dto.message import Message
-from dto.user import User
+from .dto.message import Message
+from .dto.user import User
 
 router = APIRouter()
 
