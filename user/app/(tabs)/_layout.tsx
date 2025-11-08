@@ -5,6 +5,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
+import { useVictimLocation } from '@/hooks/useVictimLocation';
 
 export default function TabLayout() {
   const router = useRouter();

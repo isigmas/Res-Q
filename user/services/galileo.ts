@@ -67,7 +67,7 @@ export class GalileoWebSocket {
    * Establish WebSocket connection to the backend
    */
   connect(): void {
-    const wsEndpoint = `${process.env.EXPO_PUBLIC_WS_URL}/tourist`;
+    const wsEndpoint = `${process.env.EXPO_PUBLIC_WS_URL}/ws/tourist`;
 
     try {
       this.ws = new WebSocket(wsEndpoint);

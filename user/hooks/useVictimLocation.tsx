@@ -6,8 +6,8 @@ import { GalileoWebSocket } from '../services/galileo';
  * Victim's GPS location data
  */
 export interface VictimLocation {
-  lat: number;      // Victim's latitude
-  lon: number;      // Victim's longitude
+  lat: number;        // Victim's latitude
+  lon: number;        // Victim's longitude
   alt: number | null; // Victim's altitude in meters (if available)
   accuracy: number;   // Location accuracy (0.0 - 1.0)
   timestamp: number;  // Timestamp in milliseconds
@@ -15,18 +15,18 @@ export interface VictimLocation {
 
 /**
  * Hook to get and broadcast the victim's current location
- * 
+ *
  * This hook:
  * 1. Gets real-time GPS position from device
  * 2. Sends location updates to rescuers via WebSocket
  * 3. Handles permissions and location watching
- * 
+ *
  * Features:
  * - High-precision GPS tracking
  * - Real-time WebSocket broadcasting
  * - Permission handling
  * - Automatic cleanup
- * 
+ *
  * @returns VictimLocation object or null if no permission/location
  */
 export function useVictimLocation(): VictimLocation | null {
@@ -45,7 +45,6 @@ export function useVictimLocation(): VictimLocation | null {
       try {
         // Request foreground location permission
         const { status } = await Location.requestForegroundPermissionsAsync();
-        
         if (status !== 'granted') {
           if (__DEV__) {
             console.warn('Location permission denied');
@@ -71,7 +70,7 @@ export function useVictimLocation(): VictimLocation | null {
               accuracy: position.coords.accuracy || 0,
               timestamp: position.timestamp,
             };
-            
+
             setLocation(newLocation);
 
             // Send location update through WebSocket
@@ -103,6 +102,7 @@ export function useVictimLocation(): VictimLocation | null {
         }
       }
     );
+
     wsRef.current.connect();
     initializeLocation();
 
@@ -120,4 +120,3 @@ export function useVictimLocation(): VictimLocation | null {
 
   return hasPermission ? location : null;
 }
-

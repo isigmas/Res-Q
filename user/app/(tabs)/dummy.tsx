@@ -1,10 +1,10 @@
 import React from "react";
 import LocationTestScreen from "@/components/LocationTestScreen";
-
+import SOSButton from "@/components/SOSButton";
 const Compas = () => {
   // TEMPORARY: Using test screen to verify WebSocket functionality
   // Replace with actual compass component after testing
-  return <LocationTestScreen />;
+  return <LocationTestScreen/>;
 };
 
 export default Compas;
