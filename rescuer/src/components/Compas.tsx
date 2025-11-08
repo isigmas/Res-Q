@@ -28,11 +28,11 @@ export const Compass: React.FC<CompassProps> = ({
   targetName = "Target",
   targetAltitude = null,
 }) => {
-  const { bearing, distance, heading, error, isLoading, currentLocation } =
+  const { bearing, distance, heading, error, isLoading } =
     useCompass(targetCoordinates);
   const rotationAnim = useRef(new Animated.Value(0)).current;
   const previousRotation = useRef(0);
-  const [currentAltitude, setCurrentAltitude] = useState<number | null>(null);
+  const [rescuerAltitude, setRescuerAltitude] = useState<number | null>(null);
 
   const targetRotation = bearing - heading;
 
@@ -56,28 +56,28 @@ export const Compass: React.FC<CompassProps> = ({
     }).start();
   }, [targetRotation]);
 
-  // Get rescuer's current altitude
+  // Pobierz wysokość rescuera z GPS
   useEffect(() => {
     let isMounted = true;
     
-    const getCurrentAltitude = async () => {
+    const getRescuerAltitude = async () => {
       try {
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
         });
         
         if (isMounted && location.coords.altitude !== null) {
-          setCurrentAltitude(location.coords.altitude);
+          setRescuerAltitude(location.coords.altitude);
         }
       } catch (error) {
-        console.error("Error getting altitude:", error);
+        console.error("Błąd pobierania wysokości:", error);
       }
     };
 
-    getCurrentAltitude();
+    getRescuerAltitude();
     
-    // Update altitude every 5 seconds
-    const interval = setInterval(getCurrentAltitude, 5000);
+    // Aktualizuj wysokość co 5 sekund
+    const interval = setInterval(getRescuerAltitude, 5000);
     
     return () => {
       isMounted = false;
@@ -154,7 +154,7 @@ export const Compass: React.FC<CompassProps> = ({
         <Text style={styles.targetName}>{targetName}</Text>
         <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
         <Text style={styles.altitudeText}>
-          {formatAltitudeDifference(currentAltitude, targetAltitude)}
+          {formatAltitudeDifference(rescuerAltitude, targetAltitude)}
         </Text>
         <Text style={styles.bearingText}>
           Stopnie celu: {Math.round(bearing)}° | Stopnie urządzenia:{" "}

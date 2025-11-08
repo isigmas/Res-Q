@@ -41,9 +41,9 @@ export const RescuerSocketProvider = ({
     });
 
   useEffect(() => {
+    console.log("JSON: " + lastJsonMessage?.type || null);
     if (lastJsonMessage) {
       if (lastJsonMessage.type === "tourist_location") {
-        console.log("Tourist location received from server");
         setLostPersonLocation(lastJsonMessage.data);
       }
     }
