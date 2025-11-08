@@ -19,6 +19,42 @@ interface Coordinates {
     longitude: number;
 }
 
+// Konfiguracja markerów
+const MARKER_CONFIG = {
+    WRAPPER_SIZE: 35,
+    PULSE_SIZE: 25,
+    CIRCLE_SIZE: 20,
+    BORDER_WIDTH: 4,
+    BORDER_COLOR: "#ffffff",
+    PULSE_OPACITY: 0.3,
+    COLORS: {
+        RESCUER: "#4caf50",
+        TOURIST: "#ff7e7b",
+    },
+};
+
+// Komponent markera - reużywalny
+const CustomMarker = ({
+    color,
+    pulseAnimation,
+}: {
+    color: string;
+    pulseAnimation: Animated.Value;
+}) => (
+    <View style={markerStyles.container}>
+        <Animated.View
+            style={[
+                markerStyles.pulse,
+                {
+                    backgroundColor: color,
+                    transform: [{ scale: pulseAnimation }],
+                },
+            ]}
+        />
+        <View style={[markerStyles.circle, { backgroundColor: color }]} />
+    </View>
+);
+
 // Jasny styl mapy
 const mapStyle = [
     {
@@ -359,23 +395,10 @@ export default function RescueTrackingScreen() {
                         title="Twoja lokalizacja"
                         pinColor="#ff7e7b"
                     >
-                        <View style={styles.markerWrapper}>
-                            <Animated.View
-                                style={[
-                                    styles.markerPulse,
-                                    styles.userMarkerPulse,
-                                    {
-                                        transform: [{ scale: userMarkerPulse }],
-                                    },
-                                ]}
-                            />
-                            <View style={styles.markerContainer}>
-                                <Image
-                                    source={require("@/assets/images/user-avatar.png")}
-                                    style={styles.markerImage}
-                                />
-                            </View>
-                        </View>
+                        <CustomMarker
+                            color={MARKER_CONFIG.COLORS.TOURIST}
+                            pulseAnimation={userMarkerPulse}
+                        />
                     </Marker>
 
                     {/* Marker ratownika */}
@@ -385,25 +408,10 @@ export default function RescueTrackingScreen() {
                         description="W drodze do Ciebie"
                         pinColor="#4caf50"
                     >
-                        <View style={styles.markerWrapper}>
-                            <Animated.View
-                                style={[
-                                    styles.markerPulse,
-                                    styles.rescuerMarkerPulse,
-                                    {
-                                        transform: [
-                                            { scale: rescuerMarkerPulse },
-                                        ],
-                                    },
-                                ]}
-                            />
-                            <View style={styles.markerContainer}>
-                                <Image
-                                    source={require("@/assets/images/rescurer.png")}
-                                    style={styles.markerImage}
-                                />
-                            </View>
-                        </View>
+                        <CustomMarker
+                            color={MARKER_CONFIG.COLORS.RESCUER}
+                            pulseAnimation={rescuerMarkerPulse}
+                        />
                     </Marker>
                 </MapView>
 
@@ -630,5 +638,29 @@ const styles = StyleSheet.create({
     rescuerRole: {
         fontSize: 13,
         color: "#666",
+    },
+});
+
+// Style dla CustomMarker
+const markerStyles = StyleSheet.create({
+    container: {
+        width: MARKER_CONFIG.WRAPPER_SIZE,
+        height: MARKER_CONFIG.WRAPPER_SIZE,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    pulse: {
+        position: "absolute",
+        width: MARKER_CONFIG.PULSE_SIZE,
+        height: MARKER_CONFIG.PULSE_SIZE,
+        borderRadius: MARKER_CONFIG.PULSE_SIZE / 2,
+        opacity: MARKER_CONFIG.PULSE_OPACITY,
+    },
+    circle: {
+        width: MARKER_CONFIG.CIRCLE_SIZE,
+        height: MARKER_CONFIG.CIRCLE_SIZE,
+        borderRadius: MARKER_CONFIG.CIRCLE_SIZE / 2,
+        borderWidth: MARKER_CONFIG.BORDER_WIDTH,
+        borderColor: MARKER_CONFIG.BORDER_COLOR,
     },
 });
