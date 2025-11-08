@@ -93,12 +93,27 @@ export function useVictimLocation(): VictimLocation | null {
       }
     };
 
+    // Initialize WebSocket and location tracking
+    wsRef.current = new GalileoWebSocket(
+      victimId,
+      () => {}, // We don't need to handle incoming messages
+      (error) => {
+        if (__DEV__) {
+          console.error('WebSocket error:', error);
+        }
+      }
+    );
+    wsRef.current.connect();
     initializeLocation();
 
-    // Cleanup: stop watching location
+    // Cleanup: stop watching location and disconnect WebSocket
     return () => {
       if (locationSubscription) {
         locationSubscription.remove();
+      }
+      if (wsRef.current) {
+        wsRef.current.disconnect();
+        wsRef.current = null;
       }
     };
   }, []);
