@@ -38,7 +38,7 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
 
             # ----- Forwarding location messages ----- #
 
-            if sharing and con_type == User.TOURIST and data.get("type_msg", None) == "tourist_location":
+            if sharing and con_type == User.TOURIST and data.get("type", None) == "tourist_location":
                 new_mes = Message(
                     type_msg="tourist_location",
                     latitude=data["payload"]["latitude"],
@@ -74,7 +74,7 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                 ))
                 print("[TOURIST]: Message sent")
 
-            elif con_type == User.RESCUER and data.get("type_msg", None) == "stop_rescue":
+            elif con_type == User.RESCUER and data.get("type", None) == "stop_rescue":
                 sharing = False
                 print("[RESCUER]: Stop rescue")
                 await send_to(User.TOURIST, Message(
