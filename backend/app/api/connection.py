@@ -100,31 +100,31 @@ async def send_to(receiver_type: User, msg: Message):
         })
 
 
-@router.websocket("/test/{con_type}")
-async def websocket_test(websocket: WebSocket, con_type: str):
-    await websocket.accept()
-
-    try:
-        while True:
-            await asyncio.sleep(3)
-            new_mes = Message(
-                type_msg="tourist_location",
-                latitude=51.108867564129866,
-                longitude=17.056756409952886,
-                altitude=122.6724967956543,
-                accuracy=35,
-                timestamp=int(time.time())
-            )
-            await websocket.send_json({
-                "type": "tourist_location",
-                "data": new_mes.to_dict()
-            })
-
-            data = await websocket.receive_json()
-
-            print("----- [NEW DATA - TEST] -----")
-            print(data)
-            print("----- [END DATA - TEST] -----")
-
-    except WebSocketDisconnect:
-        pass
+# @router.websocket("/test/{con_type}")
+# async def websocket_test(websocket: WebSocket, con_type: str):
+#     await websocket.accept()
+#
+#     try:
+#         while True:
+#             await asyncio.sleep(3)
+#             new_mes = Message(
+#                 type_msg="tourist_location",
+#                 latitude=51.108867564129866,
+#                 longitude=17.056756409952886,
+#                 altitude=122.6724967956543,
+#                 accuracy=35,
+#                 timestamp=int(time.time())
+#             )
+#             await websocket.send_json({
+#                 "type": "tourist_location",
+#                 "data": new_mes.to_dict()
+#             })
+#
+#             data = await websocket.receive_json()
+#
+#             print("----- [NEW DATA - TEST] -----")
+#             print(data)
+#             print("----- [END DATA - TEST] -----")
+#
+#     except WebSocketDisconnect:
+#         pass
