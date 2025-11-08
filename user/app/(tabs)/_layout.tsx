@@ -11,7 +11,13 @@ import { ShareNodesIcon } from "@/components/icons/ShareNodesIcon";
 import { DownloadIcon } from "@/components/icons/DownloadIcon";
 import { HomeIcon } from "@/components/icons/HomeIcon";
 
-const TabBarLabel = ({ focused, title }: { focused: boolean; title: string }) => (
+const TabBarLabel = ({
+    focused,
+    title,
+}: {
+    focused: boolean;
+    title: string;
+}) => (
     <Text
         style={{
             fontSize: 10,
@@ -44,7 +50,8 @@ export default function TabLayout() {
                     tabBarStyle: {
                         backgroundColor: "#ffffff",
                         borderTopWidth: 0,
-                        height: Platform.OS === "ios" ? 75 + insets.bottom : 105,
+                        height:
+                            Platform.OS === "ios" ? 75 + insets.bottom : 105,
                         paddingBottom:
                             Platform.OS === "ios" ? insets.bottom + 2 : 12,
                         paddingLeft: 16,
@@ -76,7 +83,10 @@ export default function TabLayout() {
                             <RouteIcon size={24} color={color} />
                         ),
                         tabBarLabel: ({ focused }) => (
-                            <TabBarLabel focused={focused} title="Planowanie Tras" />
+                            <TabBarLabel
+                                focused={focused}
+                                title="Planowanie Tras"
+                            />
                         ),
                     }}
                 />
@@ -88,7 +98,10 @@ export default function TabLayout() {
                             <CloudBoltIcon size={24} color={color} />
                         ),
                         tabBarLabel: ({ focused }) => (
-                            <TabBarLabel focused={focused} title="Radar Pogodowy" />
+                            <TabBarLabel
+                                focused={focused}
+                                title="Radar Pogodowy"
+                            />
                         ),
                     }}
                 />
@@ -116,7 +129,10 @@ export default function TabLayout() {
                             <ShareNodesIcon size={24} color={color} />
                         ),
                         tabBarLabel: ({ focused }) => (
-                            <TabBarLabel focused={focused} title="Udostępnij lokalizację" />
+                            <TabBarLabel
+                                focused={focused}
+                                title="Udostępnij lokalizację"
+                            />
                         ),
                     }}
                 />
@@ -128,7 +144,10 @@ export default function TabLayout() {
                             <DownloadIcon size={24} color={color} />
                         ),
                         tabBarLabel: ({ focused }) => (
-                            <TabBarLabel focused={focused} title="Pobrane mapy" />
+                            <TabBarLabel
+                                focused={focused}
+                                title="Pobrane mapy"
+                            />
                         ),
                     }}
                 />

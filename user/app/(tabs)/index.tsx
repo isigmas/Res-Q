@@ -198,7 +198,11 @@ export default function HomeScreen() {
                     <Text style={styles.title}>Jesteś bezpieczny</Text>
                 </View>
                 <Pressable style={styles.profileButton}>
-                    <Ionicons name="person-circle-outline" size={40} color="#172f44" />
+                    <Ionicons
+                        name="person-circle-outline"
+                        size={40}
+                        color="#172f44"
+                    />
                 </Pressable>
             </View>
 
@@ -210,12 +214,19 @@ export default function HomeScreen() {
                 {/* Info Card */}
                 <View style={styles.infoCard}>
                     <View style={styles.infoIconContainer}>
-                        <Ionicons name="information-circle" size={24} color="#172f44" />
+                        <Ionicons
+                            name="information-circle"
+                            size={24}
+                            color="#172f44"
+                        />
                     </View>
                     <View style={styles.infoTextContainer}>
-                        <Text style={styles.infoTitle}>Przytrzymaj przycisk SOS</Text>
+                        <Text style={styles.infoTitle}>
+                            Przytrzymaj przycisk SOS
+                        </Text>
                         <Text style={styles.infoText}>
-                            Aby wezwać pomoc, przytrzymaj przycisk przez 5 sekund
+                            Aby wezwać pomoc, przytrzymaj przycisk przez 5
+                            sekund
                         </Text>
                     </View>
                 </View>
@@ -236,7 +247,8 @@ export default function HomeScreen() {
                                         width: 240,
                                         height: 240,
                                         borderRadius: 120,
-                                        backgroundColor: "rgba(255, 255, 255, 0)",
+                                        backgroundColor:
+                                            "rgba(255, 255, 255, 0)",
                                     },
                                 ]}
                             />
@@ -247,7 +259,8 @@ export default function HomeScreen() {
                                         width: 200,
                                         height: 200,
                                         borderRadius: 100,
-                                        backgroundColor: "rgba(255, 220, 210, 0.08)",
+                                        backgroundColor:
+                                            "rgba(255, 220, 210, 0.08)",
                                     },
                                 ]}
                             />
@@ -258,7 +271,8 @@ export default function HomeScreen() {
                                         width: 160,
                                         height: 160,
                                         borderRadius: 80,
-                                        backgroundColor: "rgba(255, 190, 160, 0.15)",
+                                        backgroundColor:
+                                            "rgba(255, 190, 160, 0.15)",
                                     },
                                 ]}
                             />
@@ -269,7 +283,8 @@ export default function HomeScreen() {
                                         width: 120,
                                         height: 120,
                                         borderRadius: 60,
-                                        backgroundColor: "rgba(255, 160, 120, 0.25)",
+                                        backgroundColor:
+                                            "rgba(255, 160, 120, 0.25)",
                                     },
                                 ]}
                             />
@@ -280,13 +295,16 @@ export default function HomeScreen() {
                                         width: 80,
                                         height: 80,
                                         borderRadius: 40,
-                                        backgroundColor: "rgba(255, 140, 100, 0.35)",
+                                        backgroundColor:
+                                            "rgba(255, 140, 100, 0.35)",
                                     },
                                 ]}
                             />
                         </View>
                     </Animated.View>
-                    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                    <Animated.View
+                        style={{ transform: [{ scale: scaleAnim }] }}
+                    >
                         <View style={styles.outerShadow}>
                             <Pressable
                                 style={styles.sosButton}
@@ -337,19 +355,33 @@ export default function HomeScreen() {
                                     color="#172f44"
                                 />
                             </View>
-                            <Text style={styles.quickActionText}>Udostępnij lokalizację</Text>
+                            <Text style={styles.quickActionText}>
+                                Udostępnij lokalizację
+                            </Text>
                         </Pressable>
                         <Pressable style={styles.quickActionItem}>
                             <View style={styles.quickActionIcon}>
-                                <Ionicons name="call-outline" size={24} color="#172f44" />
+                                <Ionicons
+                                    name="call-outline"
+                                    size={24}
+                                    color="#172f44"
+                                />
                             </View>
-                            <Text style={styles.quickActionText}>Zadzwoń 112</Text>
+                            <Text style={styles.quickActionText}>
+                                Zadzwoń 112
+                            </Text>
                         </Pressable>
                         <Pressable style={styles.quickActionItem}>
                             <View style={styles.quickActionIcon}>
-                                <Ionicons name="map-outline" size={24} color="#172f44" />
+                                <Ionicons
+                                    name="map-outline"
+                                    size={24}
+                                    color="#172f44"
+                                />
                             </View>
-                            <Text style={styles.quickActionText}>Mapa ratunkowa</Text>
+                            <Text style={styles.quickActionText}>
+                                Mapa ratunkowa
+                            </Text>
                         </Pressable>
                         <Pressable style={styles.quickActionItem}>
                             <View style={styles.quickActionIcon}>
@@ -359,7 +391,9 @@ export default function HomeScreen() {
                                     color="#172f44"
                                 />
                             </View>
-                            <Text style={styles.quickActionText}>Pierwsza pomoc</Text>
+                            <Text style={styles.quickActionText}>
+                                Pierwsza pomoc
+                            </Text>
                         </Pressable>
                     </View>
                 </View>
@@ -369,7 +403,9 @@ export default function HomeScreen() {
                     <View style={styles.familyHeader}>
                         <Text style={styles.sectionTitle}>Lista bliskich</Text>
                         <Pressable style={styles.viewAllButton}>
-                            <Text style={styles.viewAllText}>Zobacz wszystkich</Text>
+                            <Text style={styles.viewAllText}>
+                                Zobacz wszystkich
+                            </Text>
                             <Ionicons
                                 name="chevron-forward"
                                 size={16}
@@ -380,10 +416,15 @@ export default function HomeScreen() {
 
                     {FAMILY_MEMBERS.map((member) => (
                         <Pressable key={member.id} style={styles.familyMember}>
-                            <Image source={member.avatar} style={styles.avatar} />
+                            <Image
+                                source={member.avatar}
+                                style={styles.avatar}
+                            />
                             <View style={styles.memberInfo}>
                                 <View style={styles.memberNameRow}>
-                                    <Text style={styles.memberName}>{member.name}</Text>
+                                    <Text style={styles.memberName}>
+                                        {member.name}
+                                    </Text>
                                     <View
                                         style={[
                                             styles.statusDot,
@@ -425,7 +466,11 @@ export default function HomeScreen() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalIconContainer}>
-                            <Ionicons name="checkmark-circle" size={80} color="#10b981" />
+                            <Ionicons
+                                name="checkmark-circle"
+                                size={80}
+                                color="#10b981"
+                            />
                         </View>
                         <Text style={styles.modalTitle}>Pomoc wezwana!</Text>
                         <Text style={styles.modalText}>
@@ -663,7 +708,6 @@ const styles = StyleSheet.create({
         width: 52,
         height: 52,
         borderRadius: 16,
-        backgroundColor: "#e8f4fd",
         justifyContent: "center",
         alignItems: "center",
     },
