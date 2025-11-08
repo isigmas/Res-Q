@@ -46,7 +46,11 @@ const Compas = () => {
 
   return (
     <>
-      <Compass targetCoordinates={targetCoordinates} targetName={""} />
+      <Compass 
+        targetCoordinates={targetCoordinates} 
+        targetName="Zaginiony" 
+        targetAltitude={lostPersonLocation.altitude}
+      />
     </>
   );
 };

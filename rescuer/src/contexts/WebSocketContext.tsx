@@ -41,7 +41,6 @@ export const RescuerSocketProvider = ({
     });
 
   useEffect(() => {
-    console.log("📨 WebSocket message received:", lastJsonMessage?.type || "null");
     if (lastJsonMessage) {
       if (lastJsonMessage.type === "tourist_location") {
         console.log("Tourist location received from server");
