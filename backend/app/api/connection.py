@@ -102,5 +102,12 @@ async def websocket_test(websocket: WebSocket, con_type: str):
                 "type": "tourist_location",
                 "data": new_mes.to_dict()
             })
+
+            data = await websocket.receive_json()
+
+            print("----- [NEW DATA] -----")
+            print(data)
+            print("----- [END DATA] -----")
+
     except WebSocketDisconnect:
         pass
