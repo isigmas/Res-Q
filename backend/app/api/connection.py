@@ -8,9 +8,12 @@ router = APIRouter()
 connections_tourist: list[WebSocket] = []
 connections_rescuer: list[WebSocket] = []
 
+sharing: bool = False
+
 @router.websocket("/{con_type}")
 async def websocket_connection(websocket: WebSocket, con_type: str):
     await websocket.accept()
+    global sharing
 
     if con_type == "tourist":
         con_type: User = User.TOURIST
@@ -26,7 +29,9 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
         while True:
             data = await websocket.receive_json()
 
-            if con_type == User.TOURIST and data.get("type_msg", None) == "tourist_location":
+            # ----- Forwarding location messages ----- #
+
+            if sharing and con_type == User.TOURIST and data.get("type_msg", None) == "tourist_location":
                 new_mes = Message(
                     type_msg="tourist_location",
                     latitude=data["latitude"],
@@ -37,7 +42,7 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                 )
                 await send_to(User.RESCUER, new_mes)
 
-            elif con_type == User.TOURIST and data.get("type_msg", None) == "rescuer_location":
+            elif sharing and con_type == User.RESCUER and data.get("type_msg", None) == "rescuer_location":
                 new_mes = Message(
                     type_msg="rescuer_location",
                     latitude=data["latitude"],
@@ -47,6 +52,14 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                     timestamp=data["timestamp"]
                 )
                 await send_to(User.TOURIST, new_mes)
+
+            # ----- Start/end location sharing ----- #
+
+            elif con_type == User.TOURIST and data.get("type_msg", None) == "start_rescue":
+                sharing = True
+
+            elif con_type == User.TOURIST and data.get("type_msg", None) == "start_rescue":
+                sharing = False
 
     except WebSocketDisconnect:
         connections.remove(websocket)
