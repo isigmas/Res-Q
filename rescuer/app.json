@@ -38,6 +38,12 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Aplikacja Ratownik potrzebuje Twojej lokalizacji do wysyłania jej do serwera."
+        }
       ]
     ],
     "experiments": {
