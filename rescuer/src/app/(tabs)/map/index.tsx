@@ -10,7 +10,7 @@ import { useEffect, useState, useRef } from "react";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { Stack } from "expo-router";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { useRescuerSocket } from "@/src/contexts/WebSocketContext";
 
 interface Coordinates {
@@ -397,7 +397,6 @@ export default function RescueTrackingScreen() {
                 <MapView
                     ref={mapRef}
                     style={styles.map}
-                    provider={PROVIDER_GOOGLE}
                     initialRegion={{
                         latitude: rescuerLocation.latitude,
                         longitude: rescuerLocation.longitude,

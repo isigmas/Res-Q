@@ -22,15 +22,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="navigation/index"
-        options={{
-          title: "Nawigacja",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="location-arrow" color={color} />
-          ),
-        }}
-      />
     </Tabs>
   );
 }
