@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { GalileoWebSocket, VictimLocationData } from '../services/galileo';
-import { useRescuerLocation } from './useRescuerLocation';
+import { useState, useEffect } from 'react';
+import * as Location from 'expo-location';
 
 /**
  * Victim location data structure (ONLINE mode)
@@ -9,15 +8,6 @@ import { useRescuerLocation } from './useRescuerLocation';
  * The rescuer app will use this to calculate bearing and distance
  * from the rescuer's current position to the victim's position.
  */
-interface VictimLocation {
-  lat: number;      // Target latitude (victim's position)
-  lon: number;      // Target longitude (victim's position)
-  alt: number;      // Target altitude in meters
-  accuracy: number; // Location accuracy (0.0 - 1.0, where 1.0 is most accurate)
-  timestamp: string; // ISO 8601 timestamp of when this location was recorded
-  source: 'ONLINE'; // Data source indicator
-}
-
 /**
  * Custom hook to receive victim's location updates via WebSocket in ONLINE mode
  * 
@@ -70,84 +60,64 @@ interface VictimLocation {
  * }
  * ```
  */
-export function useVictimLocation(victimId: string): VictimLocation | null {
+/**
+ * Victim's device location hook (used in the `user/` app where the victim sends their
+ * own GPS position). This hook returns the current device GPS position and handles
+ * permissions and watching the device location.
+ */
+export interface VictimLocation {
+  lat: number;
+  lon: number;
+  alt: number | null;
+  accuracy: number;
+  timestamp: number;
+}
+
+export function useVictimLocation(): VictimLocation | null {
   const [location, setLocation] = useState<VictimLocation | null>(null);
-  const wsRef = useRef<GalileoWebSocket | null>(null);
-  const isMountedRef = useRef(true);
-  
-  // Get rescuer's current location to send back to server
-  const rescuerLocation = useRescuerLocation();
+  const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {
-    // Mark component as mounted
-    isMountedRef.current = true;
+    let subscription: Location.LocationSubscription | null = null;
 
-    /**
-     * Handler for receiving location updates from WebSocket
-     */
-    const handleLocationUpdate = (data: VictimLocationData) => {
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        // Map WebSocket message to VictimLocation format
-        // This is the TARGET location (victim's position) for compass navigation
-        const mappedLocation: VictimLocation = {
-          lat: data.latitude,    // Victim's latitude
-          lon: data.longitude,   // Victim's longitude
-          alt: data.altitude,    // Victim's altitude (meters)
-          accuracy: data.accuracy,
-          timestamp: data.timestamp,
-          source: 'ONLINE',
-        };
-        
-        setLocation(mappedLocation);
-
-        // Send rescuer's location back to server when we receive victim update
-        if (rescuerLocation && wsRef.current) {
-          wsRef.current.sendRescuerLocation({
-            lat: rescuerLocation.lat,
-            lon: rescuerLocation.lon,
-            alt: rescuerLocation.alt,
-            accuracy: rescuerLocation.accuracy,
-            timestamp: rescuerLocation.timestamp,
-          });
+    const init = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          if (__DEV__) console.warn('Location permission denied (victim)');
+          setHasPermission(false);
+          return;
         }
+
+        setHasPermission(true);
+
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 1000,
+            distanceInterval: 5,
+          },
+          (pos) => {
+            setLocation({
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              alt: pos.coords.altitude,
+              accuracy: pos.coords.accuracy || 0,
+              timestamp: pos.timestamp,
+            });
+          }
+        );
+      } catch (error) {
+        if (__DEV__) console.error('Failed to initialize victim location:', error);
       }
     };
 
-    /**
-     * Handler for WebSocket errors
-     */
-    const handleError = (error: Event | Error) => {
-      // On error, keep last known valid location
-      // Only log the error in development
-      if (__DEV__) {
-        console.error('WebSocket error for victim location:', error);
-      }
-      // Don't set location to null - preserve last known position
-      // WebSocket will attempt to reconnect automatically
-    };
+    init();
 
-    // Create and connect WebSocket
-    wsRef.current = new GalileoWebSocket(
-      victimId,
-      handleLocationUpdate,
-      handleError
-    );
-    
-    wsRef.current.connect();
-
-    // Cleanup function
     return () => {
-      isMountedRef.current = false;
-      
-      // Disconnect WebSocket to prevent memory leaks
-      if (wsRef.current) {
-        wsRef.current.disconnect();
-        wsRef.current = null;
-      }
+      if (subscription) subscription.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [victimId]); // Only re-run if victimId changes (not rescuerLocation - we use latest via closure)
+  }, []);
 
-  return location;
+  return hasPermission ? location : null;
 }
