@@ -1,6 +1,3 @@
-// src/components/LocationDisplay.tsx
-
-import React from "react";
 import {
   ActivityIndicator,
   Button,
