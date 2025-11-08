@@ -22,13 +22,14 @@ export const RescuerLocationTracker = () => {
       }
       // let { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
       setHasPermissions(true);
+      console.log("Uprawnienia do lokalizacji przyznane.");
     };
     requestPermissions();
   }, []);
 
   useInterval(
     () => {
-      // Uruchom logikę wysyłania co interwał
+      //update rescuer location
       sendCurrentLocation();
     },
     hasPermissions ? SEND_INTERVAL_MS : null
@@ -47,11 +48,14 @@ export const RescuerLocationTracker = () => {
       });
 
       const message: RescuerLocationUpdate = {
-        type: "RESCUER_LOCATION_UPDATE",
+        type: "rescuer_location",
         payload: {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
-          //timestamp: location.timestamp,
+          altitude: location.coords.altitude,
+          accuracy: location.coords.accuracy,
+          timestamp: Date.now(),
+          user_id: null,
         },
       };
 
