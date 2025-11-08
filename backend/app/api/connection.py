@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect
 from .dto.message import Message
@@ -87,6 +89,7 @@ async def websocket_test(websocket: WebSocket, con_type: str):
 
     try:
         while True:
+            await asyncio.sleep(3)
             new_mes = Message(
                 type_msg="tourist_location",
                 latitude=51.108867564129866,
@@ -95,6 +98,9 @@ async def websocket_test(websocket: WebSocket, con_type: str):
                 accuracy=35,
                 timestamp=int(time.time())
             )
-            await websocket.send_json(new_mes.to_dict())
+            await websocket.send_json({
+                "type": "tourist_location",
+                "data": new_mes.to_dict()
+            })
     except WebSocketDisconnect:
         pass
