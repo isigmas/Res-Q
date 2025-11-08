@@ -11,7 +11,7 @@ import {
   MessageReceived,
 } from "../types/websocketTypes";
 
-const WEBSOCKET_URL = "wss://resq-backend-isp4g.ondigitalocean.app/rescuer";
+const WEBSOCKET_URL = "wss://resq-backend-isp4g.ondigitalocean.app/ws/rescuer";
 
 interface RescuerSocketContextType {
   readyState: ReadyState;
