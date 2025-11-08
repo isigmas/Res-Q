@@ -41,22 +41,22 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
             if sharing and con_type == User.TOURIST and data.get("type_msg", None) == "tourist_location":
                 new_mes = Message(
                     type_msg="tourist_location",
-                    latitude=data["latitude"],
-                    longitude=data["longitude"],
-                    altitude=data["altitude"],
-                    accuracy=data["accuracy"],
-                    timestamp=data["timestamp"]
+                    latitude=data["payload"]["latitude"],
+                    longitude=data["payload"]["longitude"],
+                    altitude=data["payload"]["altitude"],
+                    accuracy=data["payload"]["accuracy"],
+                    timestamp=data["payload"]["timestamp"]
                 )
                 await send_to(User.RESCUER, new_mes)
 
             elif sharing and con_type == User.RESCUER and data.get("type_msg", None) == "rescuer_location":
                 new_mes = Message(
                     type_msg="rescuer_location",
-                    latitude=data["latitude"],
-                    longitude=data["longitude"],
-                    altitude=data["altitude"],
-                    accuracy=data["accuracy"],
-                    timestamp=data["timestamp"]
+                    latitude=data["payload"]["latitude"],
+                    longitude=data["payload"]["longitude"],
+                    altitude=data["payload"]["altitude"],
+                    accuracy=data["payload"]["accuracy"],
+                    timestamp=data["payload"]["timestamp"]
                 )
                 await send_to(User.TOURIST, new_mes)
 
@@ -67,12 +67,14 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                 await send_to(User.RESCUER, Message(
                     type_msg="start_rescue"
                 ))
+                print("[RESCUE]: Rescue started")
 
             elif con_type == User.RESCUER and data.get("type_msg", None) == "stop_rescue":
                 sharing = False
                 await send_to(User.TOURIST, Message(
                     type_msg="stop_rescue"
                 ))
+                print("[RESCUE]: Stop started")
 
     except WebSocketDisconnect:
         connections.remove(websocket)
