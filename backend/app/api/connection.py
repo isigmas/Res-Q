@@ -51,7 +51,7 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
                 await send_to(User.RESCUER, new_mes)
                 print("[TOURIST]: Message sent")
 
-            elif sharing and con_type == User.RESCUER and data.get("type_msg", None) == "rescuer_location":
+            elif sharing and con_type == User.RESCUER and data.get("type", None) == "rescuer_location":
                 new_mes = Message(
                     type_msg="rescuer_location",
                     latitude=data["payload"]["latitude"],
@@ -66,7 +66,7 @@ async def websocket_connection(websocket: WebSocket, con_type: str):
 
             # ----- Start/end location sharing ----- #
 
-            elif con_type == User.TOURIST and data.get("type_msg", None) == "start_rescue":
+            elif con_type == User.TOURIST and data.get("type", None) == "start_rescue":
                 sharing = True
                 print("[TOURIST]: Rescue started")
                 await send_to(User.RESCUER, Message(
