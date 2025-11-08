@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx expo install:*)"
+      "Bash(npx expo install:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

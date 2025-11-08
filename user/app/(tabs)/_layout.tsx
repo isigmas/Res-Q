@@ -1,139 +1,169 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { Tabs } from "expo-router";
+import React from "react";
+import { View, StyleSheet, Pressable, Text } from "react-native";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useRouter } from 'expo-router';
+import { HapticTab } from "@/components/haptic-tab";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useRouter } from "expo-router";
+import { RouteIcon } from "@/components/icons/RouteIcon";
+import { CloudBoltIcon } from "@/components/icons/CloudBoltIcon";
+import { ShareNodesIcon } from "@/components/icons/ShareNodesIcon";
+import { DownloadIcon } from "@/components/icons/DownloadIcon";
 
 export default function TabLayout() {
-  const router = useRouter();
+    const router = useRouter();
 
-  const handleSOSPress = () => {
-    console.log('SOS button pressed');
-    // TODO: Implement SOS functionality
-  };
+    const handleSOSPress = () => {
+        console.log("SOS button pressed");
+        // TODO: Implement SOS functionality
+    };
 
-  return (
-    <View style={styles.container}>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: '#000',
-          tabBarInactiveTintColor: '#666',
-          headerShown: false,
-          tabBarButton: HapticTab,
-          tabBarStyle: {
-            backgroundColor: '#fff',
-            borderTopWidth: 1,
-            borderTopColor: '#e0e0e0',
-            height: 80,
-            paddingBottom: 8,
-            paddingTop: 8,
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '600',
-          },
-        }}>
-        <Tabs.Screen
-          name="navigation"
-          options={{
-            title: 'Navigation',
-            tabBarIcon: ({ color, focused }) => (
-              <IconSymbol size={24} name="location.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="weather-radar"
-          options={{
-            title: 'Weather',
-            tabBarIcon: ({ color, focused }) => (
-              <IconSymbol size={24} name="cloud.rain.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-            tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.homeIconContainer, focused && styles.homeIconFocused]}>
-                <IconSymbol size={32} name="house.fill" color={focused ? '#fff' : color} />
-              </View>
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="share-location"
-          options={{
-            title: 'Share',
-            tabBarIcon: ({ color, focused }) => (
-              <IconSymbol size={24} name="location.circle.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="saved-maps"
-          options={{
-            title: 'Maps',
-            tabBarIcon: ({ color, focused }) => (
-              <IconSymbol size={24} name="map.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="explore"
-          options={{
-            href: null,
-          }}
-        />
-      </Tabs>
-
-      {/* Floating SOS Button */}
-      <Pressable
-        style={({ pressed }) => [
-          styles.sosButton,
-          pressed && styles.sosButtonPressed,
-        ]}
-        onPress={handleSOSPress}>
-        <IconSymbol size={32} name="exclamationmark.triangle.fill" color="#fff" />
-      </Pressable>
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <Tabs
+                screenOptions={{
+                    tabBarActiveTintColor: "#000",
+                    tabBarInactiveTintColor: "#abababff",
+                    headerShown: false,
+                    tabBarButton: HapticTab,
+                    tabBarStyle: {
+                        backgroundColor: "#fff",
+                        borderTopWidth: 1,
+                        borderTopColor: "#e0e0e0",
+                        height: 90,
+                        paddingBottom: 10,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        paddingTop: 8,
+                    },
+                    tabBarLabelStyle: {
+                        fontSize: 11,
+                        fontWeight: "600",
+                        height: 32,
+                        lineHeight: 14,
+                    },
+                    tabBarItemStyle: {
+                        paddingVertical: 2,
+                    },
+                    tabBarAllowFontScaling: false,
+                }}
+            >
+                <Tabs.Screen
+                    name="navigation"
+                    options={{
+                        title: "Planowanie Tras",
+                        tabBarIcon: ({ color, focused }) => (
+                            <RouteIcon size={24} color={color} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="weather-radar"
+                    options={{
+                        title: "Radar Pogodowy",
+                        tabBarIcon: ({ color, focused }) => (
+                            <CloudBoltIcon size={24} color={color} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="index"
+                    options={{
+                        title: "",
+                        tabBarIcon: ({ color, focused }) => (
+                            <View
+                                style={[
+                                    styles.homeIconContainer,
+                                    focused && styles.homeIconFocused,
+                                ]}
+                            >
+                                <IconSymbol
+                                    size={48}
+                                    name="house.fill"
+                                    color={focused ? "#fff" : color}
+                                />
+                            </View>
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="share-location"
+                    options={{
+                        title: "Udostępnij lokalizację",
+                        tabBarIcon: ({ color, focused }) => (
+                            <ShareNodesIcon size={24} color={color} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="saved-maps"
+                    options={{
+                        title: "Pobrane mapy",
+                        tabBarIcon: ({ color, focused }) => (
+                            <DownloadIcon size={24} color={color} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="explore"
+                    options={{
+                        href: null,
+                    }}
+                />
+            </Tabs>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  homeIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: -20,
-    borderWidth: 3,
-    borderColor: '#fff',
-  },
-  homeIconFocused: {
-    backgroundColor: '#0a7ea4',
-  },
-  sosButton: {
-  position: 'absolute',
-  bottom: 100,
-  left: 0,
-  right: 0,
-  height: 100,
-  borderRadius: 35, // lub 35 dla zaokrąglonych rogów tylko u góry
-  backgroundColor: '#CC0000',
-  justifyContent: 'center',
-  alignItems: 'center',
-  },
-  sosButtonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.95 }],
-  },
+    container: {
+        flex: 1,
+    },
+    homeIconContainer: {
+        width: 66,
+        height: 66,
+        borderRadius: 38,
+        backgroundColor: "#172f44",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: -15,
+        borderWidth: 3,
+        borderColor: "#fff",
+    },
+    homeIconFocused: {
+        backgroundColor: "#172f44",
+    },
+    sosButton: {
+        position: "absolute",
+        bottom: 100,
+        left: 10,
+        right: 10,
+        height: 100,
+        borderRadius: 35, // lub 35 dla zaokrąglonych rogów tylko u góry
+        backgroundColor: "#bd382f",
+        borderColor: "#d5524c",
+        borderWidth: 3,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    sosButtonPressed: {
+        opacity: 0.8,
+        transform: [{ scale: 0.95 }],
+    },
+    sosContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    sosText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "bold",
+    },
+    sosSubtext: {
+        color: "#fff",
+        fontSize: 12,
+        marginTop: 2,
+        opacity: 0.9,
+    },
 });
