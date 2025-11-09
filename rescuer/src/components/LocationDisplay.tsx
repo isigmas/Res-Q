@@ -1,6 +1,3 @@
-// src/components/LocationDisplay.tsx
-
-import React from "react";
 import {
   ActivityIndicator,
   Button,
@@ -101,19 +98,18 @@ export const LocationDisplay = () => {
             </Text>
           </View>
 
-          {/* MOŻNA DODAĆ DOKŁADNOŚĆ i TIMESTAMP */}
-          {/* <View style={styles.dataRow}>
+          <View style={styles.dataRow}>
             <Text style={styles.dataLabel}>Dokładność:</Text>
             <Text style={styles.dataValue}>
               {lostPersonLocation.accuracy.toFixed(1)} m
             </Text>
-          </View> */}
-          {/* <View style={styles.dataRow}>
-            <Text style={styles.dataLabel}>Znacznik czasu:</Text>
+          </View>
+          <View style={styles.dataRow}>
+            <Text style={styles.dataLabel}>Czas:</Text>
             <Text style={styles.dataValue}>
               {new Date(lostPersonLocation.timestamp).toLocaleString("pl-PL")}
             </Text>
-          </View> */}
+          </View>
         </View>
       )}
       <View style={styles.separator} />
