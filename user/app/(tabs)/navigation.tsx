@@ -703,7 +703,7 @@ export default function NavigationScreen() {
                         styles.startButtonContainer,
                         {
                             paddingBottom:
-                                Platform.OS === "ios" ? insets.bottom + 90 : 90,
+                                Platform.OS === "ios" ? insets.bottom + 20 : 20,
                         },
                     ]}
                 >
