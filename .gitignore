@@ -1,2 +1,5 @@
 .idea
 .DS_Store
+
+user/node_modules/
+user/android/
