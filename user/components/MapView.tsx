@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Pressable, Alert } from 'react-native';
-import MapView, { PROVIDER_DEFAULT, Region } from 'react-native-maps';
+import { StyleSheet, View, Pressable, Alert, Platform } from 'react-native';
+import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useMap } from '@/contexts/MapContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -65,7 +65,7 @@ export default function Map() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_DEFAULT}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
         mapType="terrain"
         initialRegion={{
           latitude: center[1],

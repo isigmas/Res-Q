@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import MapView, { Marker, Circle } from "react-native-maps";
+import MapView, { Marker, Circle, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from "react-native-maps";
 
 // Mock data dla członków rodziny
 const FAMILY_MEMBERS = [
@@ -88,6 +88,7 @@ export default function ShareLocationScreen() {
                 <View style={styles.mapContainer}>
                     <MapView
                         style={styles.map}
+                        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                         initialRegion={{
                             latitude: userLocation.latitude,
                             longitude: userLocation.longitude,
