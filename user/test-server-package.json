@@ -1,0 +1,16 @@
+{
+  "name": "res-q-test-server",
+  "version": "1.0.0",
+  "description": "WebSocket test server for Res-Q victim location tracking",
+  "main": "test-server.js",
+  "scripts": {
+    "start": "node test-server.js",
+    "dev": "node test-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
