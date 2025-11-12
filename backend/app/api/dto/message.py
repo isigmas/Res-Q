@@ -9,12 +9,12 @@ class Message:
 
     def __init__(self,
                  type_msg: str,
-                 latitude: float,
-                 longitude: float,
-                 altitude: float,
-                 accuracy: float,
-                 timestamp: int,
                  user_id: str = None,
+                 latitude: float = None,
+                 longitude: float = None,
+                 altitude: float = None,
+                 accuracy: int = None,
+                 timestamp: int = None,
     ):
         self.type_msg = type_msg
         self.user_id = user_id

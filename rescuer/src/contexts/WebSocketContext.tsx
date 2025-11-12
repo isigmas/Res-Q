@@ -11,7 +11,8 @@ import {
   MessageReceived,
 } from "../types/websocketTypes";
 
-const WEBSOCKET_URL = "wss://resq-backend-isp4g.ondigitalocean.app/rescuer";
+const WEBSOCKET_URL =
+  "wss://resq-backend-isp4g.ondigitalocean.app/ws/rescuer";
 
 interface RescuerSocketContextType {
   readyState: ReadyState;
@@ -40,8 +41,9 @@ export const RescuerSocketProvider = ({
     });
 
   useEffect(() => {
+    console.log("JSON: " + lastJsonMessage?.type || null);
     if (lastJsonMessage) {
-      if (lastJsonMessage.type === "LOST_PERSON_LOCATION") {
+      if (lastJsonMessage.type === "tourist_location") {
         setLostPersonLocation(lastJsonMessage.data);
       }
     }

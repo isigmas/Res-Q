@@ -1,59 +1,56 @@
 import { Compass } from "@/src/components/Compas";
-import { Picker } from "@react-native-picker/picker";
-import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { useRescuerSocket } from "@/src/contexts/WebSocketContext";
+import { StyleSheet, View } from "react-native";
 
-interface Location {
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-  name: string;
-}
+import { ActivityIndicator, Text } from "react-native";
+import { ReadyState } from "react-use-websocket";
 
-const LocationData: Location[] = [
-  {
-    coordinates: {
-      latitude: 49.4849,
-      longitude: 20.023,
-    },
-    name: "Nowy Targ",
-  },
-  {
-    coordinates: {
-      latitude: 54.3527,
-      longitude: 18.6411,
-    },
-    name: "Gdańsk",
-  },
-];
 const Compas = () => {
-  const [currentLocation, setCurrentLocation] = useState<Location>(
-    LocationData[0]
-  );
-  const handleLocationSelect = (location: Location) => {
-    setCurrentLocation(location);
+  const { lostPersonLocation, readyState } = useRescuerSocket();
+
+  if (readyState === ReadyState.CONNECTING) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#FFA500" />
+        <Text style={styles.loadingText}>Łączenie z serwerem...</Text>
+      </View>
+    );
+  }
+
+  if (readyState === ReadyState.CLOSED || readyState === ReadyState.CLOSING) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#F44336" />
+        <Text style={styles.loadingText}>
+          Połączenie zerwane. Próba ponownego...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!lostPersonLocation) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>
+          Połączono. Oczekiwanie na lokalizację zaginionej osoby...
+        </Text>
+      </View>
+    );
+  }
+
+  const targetCoordinates = {
+    latitude: lostPersonLocation.latitude,
+    longitude: lostPersonLocation.longitude,
   };
 
   return (
     <>
-      <Compass
-        targetCoordinates={currentLocation.coordinates}
-        targetName={currentLocation.name}
+      <Compass 
+        targetCoordinates={targetCoordinates} 
+        targetName="Zaginiony" 
+        targetAltitude={lostPersonLocation.altitude}
       />
-      <Picker
-        selectedValue={currentLocation.name}
-        onValueChange={(itemValue) => {
-          const selected = LocationData.find((loc) => loc.name === itemValue);
-          if (selected) handleLocationSelect(selected);
-        }}
-        style={styles.picker}
-        itemStyle={styles.item}
-      >
-        {LocationData.map((loc) => (
-          <Picker.Item key={loc.name} label={loc.name} value={loc.name} />
-        ))}
-      </Picker>
     </>
   );
 };
@@ -72,6 +69,20 @@ const styles = StyleSheet.create({
   item: {
     fontSize: 18,
     color: "#000000",
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    padding: 20,
+  },
+  loadingText: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 15,
+    fontSize: 16,
+    color: "#666",
   },
 });
 

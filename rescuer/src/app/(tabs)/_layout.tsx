@@ -9,25 +9,16 @@ export default function TabLayout() {
         options={{
           title: "Kompas",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
+            <FontAwesome size={28} name="compass" color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="navigation/index"
+        name="map/index"
         options={{
-          title: "Nawigacja",
+          title: "Mapa",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="cog" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings/index"
-        options={{
-          title: "Ustawienia",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="cog" color={color} />
+            <FontAwesome size={28} name="map" color={color} />
           ),
         }}
       />
