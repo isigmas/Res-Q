@@ -1,8 +1,9 @@
-# 🏔️ Res-Q
+# 🏔️ Res-Q | [3rd place winners of the Cassini Hackathon](https://www.canva.com/design/DAG3rYIFLSY/-WQVH-_5WjsgEMXtzyZglg/edit?utm_content=DAG3rYIFLSY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
 
 **The seconds that save lives.** A "point-to-target" navigation tool for mountain rescuers that turns guesswork into certainty.
+<img width="1203" height="661" alt="Zrzut ekranu 2025-12-22 o 04 11 39" src="https://github.com/user-attachments/assets/fadbfb09-6586-4c94-84dd-33efc5082d7b" />
 
----
 
 ## 🚨 The Challenge
 
